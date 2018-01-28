@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+<meta charset="utf-8"/>
+        <title>STC</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/jquery.roundslider/1.3/roundslider.min.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<link href="https://cdn.jsdelivr.net/jquery.roundslider/1.3/roundslider.min.css" rel="stylesheet" />                                    
+	<link rel="shortcut icon" href="/assets/favicon-32x32.png?v=2" />
+	<style type="text/css">
+/* Custom indentations are needed because the length of custom labels differs from
+   the length of the standard labels */
+.custom-label-flipswitch.ui-flipswitch .ui-btn.ui-flipswitch-on {
+    text-indent: -3.4em;
+}
+.custom-label-flipswitch.ui-flipswitch .ui-flipswitch-off {
+    text-indent: 0.5em;
+}
+/* Custom widths are needed because the length of custom labels differs from
+   the length of the standard labels */
+/*
+.custom-label-flipswitch.ui-flipswitch {
+    width: 8.875em;
+}
+.custom-label-flipswitch.ui-flipswitch.ui-flipswitch-active {
+    padding-left: 7em;
+    width: 1.875em;
+}
+@media (min-width: 28em) {
+    // Repeated from rule .ui-flipswitch above
+    .ui-field-contain > label + .custom-label-flipswitch.ui-flipswitch {
+        width: 1.875em;
+    }
+}
+*/
+.headerText {
+	opacity: 1 !important;
+	background-color: #e9e9e9 !important;
+}
+.dispInline, .dispInlineLabel{
+    display: inline-block;
+    border-bottom-width:0;
+}
+.dispInlineLabel{
+    min-width: 150px;
+    vertical-align: middle;
+}
+.dispInline{
+     min-width: 150px;
+    vertical-align: middle;
+}
+.clearFloats{
+    clear:both;
+}
+
+.rs-control .rs-range-color {
+  background: #3080c0;
+}
+
+.rs-control .rs-path-color {
+    background-color: #e9e9e9;
+}
+
+.rs-control .rs-handle {
+    background-color: #f6f6f6;
+    border: 2px solid #d0d0d0;   
+}
+
+.rs-tooltip-text {
+font-size: 16px;
+}
+
+.rs-tooltip.hover {
+    background-color: #e9e9e9;
+}
+
+#digit .rs-seperator {
+	border-width: 0px;
+}
+
+#digit .rs-handle  {
+    background-color: #3080c0;
+}
+
+#color-box {
+  width:32px;
+  height:32px;
+  border:1px solid grey;
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 10px;
+  background-image: url(/assets/favicon-32x32.png);
+  position: relative;
+}
+
+#color-overlay {
+  width:100%;
+  height:100%;
+  z-index:2;
+}
+
+	</style>
+	<script>
+	var serverSetting = false;
+	function updateElements(values) {
+		serverSetting = true;
+		var digit = values["digit"];
+		if (typeof digit != 'undefined') {
+			var range = $('#digit')
+			range.roundSlider("setValue", digit, 1);
+			delete values["digit"];
+		}
+		var displayOn = values["display_on"];
+		if (typeof displayOn != 'undefined') {
+			var range = $('#on_range')
+			range.roundSlider("setValue", displayOn, 1);
+			delete values["display_on"];
+		}
+		var displayOff = values["display_off"];
+		if (typeof displayOff != 'undefined') {
+			$('#on_range').roundSlider("setValue", displayOff, 2);
+			delete values["display_off"];
+		}
+		
+		Object.keys(values).forEach(function(key, index) {
+			var element = $('#' + key);
+			
+			if (key == "digits_on") {
+				values[key] = values[key]/1000;
+			}
+			
+			var elType = element.attr('type');
+			if (elType == "checkbox") {
+				element.prop("checked", this[key]);
+				element.flipswitch("refresh");
+			} else if (elType == "radio") {
+					element.prop("checked", this[key]);
+					element.checkboxradio("refresh");
+			} else if (typeof elType == 'undefined') {
+				element.html(this[key]);
+			} else {
+				element.val(this[key]);
+				if (elType == "number") {
+					element.slider("refresh");					
+				} else if (elType == 'picklist') {
+					element.selectmenu("refresh");
+				}
+			}
+			
+			if (key == "hue" || key == "saturation" || key == "led_scale") {
+				HilightColor();
+			}
+		}, values);
+		serverSetting = false;
+	}
+	
+	function updateStatus(msg) {
+		$("#status").html(msg);		
+	}
+	
+	function url(s) {
+	    var l = window.location;
+	    return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + s;
+	}
+
+	function getElementValue(element) {
+		element = $(element);
+		var elType = element.attr('type');
+		if (elType == "checkbox") {
+			return element.prop("checked");
+		} else {
+			return element.val();
+		}
+	}
+	
+	function getPageId(pageName) {
+		var map = { 'clock': '1', 'leds': '2', 'extra': '3', 'presets': '4', 'info': '5', 'preset_names': '6'};
+		
+		return map[pageName];
+	}
+	
+	function elementBlur(element) {
+		if (serverSetting) {
+			return;
+		}
+		var pageId = getPageId($(".ui-page-active").attr("id"));
+		var value = getElementValue(element);
+		if (element.id == "digits_on") {
+			value *= 1000;
+		}
+		var msg = '9:'+pageId+':'+element.id+':'+value;
+		safeSend(msg);
+	}
+	
+	function elementChange(element) {
+		elementBlur(element);
+	}
+	
+	function hsv_to_hsl(h, s, v) {
+	    // both hsv and hsl values are in [0, 1]
+	    var l = (2 - s) * v / 2;
+
+	    if (l != 0) {
+	        if (l == 1) {
+	            s = 0
+	        } else if (l < 0.5) {
+	            s = s * v / (l * 2)
+	        } else {
+	            s = s * v / (2 - l * 2)
+	        }
+	    }
+
+	    return [h, s, l]
+	}
+	
+	function HilightColor() {
+		var hSlider = $("#hue");
+		var h = getElementValue(hSlider);
+		var sSlider = $("#saturation");
+		var s = getElementValue(sSlider);
+		var vSlider = $("#led_scale");
+		var v = getElementValue(vSlider);
+		
+		var color = "hsla(" + (h * 360 / 255 | 0) + ",100%," + (100 - s * 50 / 255 | 0) + "%," + v / 255 + ")";
+		$("#color-overlay").css("background-color", color);
+	}
+	
+	function pageRefresh(activePage){
+		safeSend(getPageId(activePage) + ':');
+	} ;
+	
+	var ws;
+
+	ws = new WebSocket(url("/ws"));
+	
+	// subscribe to visibility change events
+	document.addEventListener('visibilitychange', function() {
+	    // fires when app transitions from prerender, user returns to the app / tab.
+	    if (document.visibilityState == 'visible') { 
+	    	if (!ws || !(ws.readyState == WebSocket.OPEN || ws.readyState == WebSocket.CONNECTING)) {
+	    		ws = new WebSocket(url("/ws"));
+	    	}
+	    }
+	});
+	
+	ws.onopen = function(event) {
+		try {
+			pageRefresh($(".ui-page-active").attr("id"));
+		} catch (e) {			
+			(console.error || console.log).call(console, e.stack || e);
+		}
+	}
+	
+	ws.onmessage= function(event) {
+	  var msg = JSON.parse(event.data);
+	  
+	  switch(msg.type) {
+	    case "sv.update":
+	    case "sv.init.clock":	// Received initialization object
+	    case "sv.init.leds":	// Received initialization object
+	    case "sv.init.extra":	// Received initialization object
+	    case "sv.init.presets":	// Received initialization object
+	    case "sv.init.preset_names":	// Received initialization object
+	    case "sv.init.info":	// Received initialization object
+	    	updateElements(msg.value);
+	    	break;
+	      
+	    case "sv.status":
+	    	updateStatus(msg.value);
+	    	break;
+	  }
+	};
+
+	function safeSend(msg) {
+		console.log(msg);
+		try {
+			ws.send(msg);
+		} catch (e) {
+			console.log(e.stack || e);
+		}
+	}
+	
+	$(document).ready(function () {
+		$.fn.roundSlider.prototype._invertRange = true;
+		$("#on_range").roundSlider({
+			  sliderType: "range",
+			  //showTooltip: false,
+			  radius: 60,
+			  width: 20,
+			  min: 0,
+			  max: 24,
+			  step: 1,
+			  value: "8,22",
+			  startAngle: 0,
+			  endAngle: "+360",
+			  handleSize: "+8",
+			  
+			  change: function(e) {
+				if (serverSetting) {
+					return;
+				}
+				
+				var values = e.value.split(',');
+				var pageId = getPageId($(".ui-page-active").attr("id"));
+				var msg = '9:'+pageId+':display_on:'+values[0];
+				safeSend(msg);
+				msg = '9:'+pageId+':display_off:'+values[1];
+				safeSend(msg);
+			  }
+			});
+		
+		$("#digit").roundSlider({
+			  sliderType: "default",
+			  //showTooltip: false,
+			  animation: false,
+			  radius: 60,
+			  width: 20,
+			  min: 0,
+			  max: 9,
+			  step: 1,
+			  value: "0",
+			  startAngle: 90,
+			  endAngle: 54,
+			  handleSize: "+8",
+			  
+			  change: function(e) {
+					if (serverSetting) {
+						return;
+					}
+					
+					var pageId = getPageId($(".ui-page-active").attr("id"));
+					var msg = '9:'+pageId+':digit:'+e.value;
+					safeSend(msg);
+				  },
+		  
+		  drag: function(e) {
+				if (serverSetting) {
+					return;
+				}
+				
+				var pageId = getPageId($(".ui-page-active").attr("id"));
+				var msg = '9:'+pageId+':digit:'+e.value;
+				safeSend(msg);
+			  }
+				});
+			
+		$(document).on('pagecontainerbeforechange', function(event, ui) {
+			pageRefresh(ui.toPage[0].id);			
+		});		
+	});
+	
+	</script>
+    </head>
+    <body>
+        <div data-role="page" id="clock">
+            <div data-role="header" data-position="fixed">
+                <h1>STC</h1>
+                <div id="set_icon_1" class="ui-btn-right ui-btn ui-state-disabled headerText ui-btn-icon-right ui-icon-eye"></div>
+                <div data-role="navbar">
+                    <ul>
+                        <li>
+                            <a class="ui-btn-active ui-state-persist">Clock</a>
+                        </li>
+                        <li>
+                            <a href="#leds">LEDs</a>
+                        </li>
+                        <li>
+                            <a href="#extra">Extra</a>
+                        </li>
+                        <li>
+                            <a href="#presets">Presets</a>
+                        </li>
+                        <li>
+                            <a href="#info">Info</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div data-role="content">
+                <form action="/set_clock" method="POST" id="clock_form">
+	                    <div class="dispInlineLabel" >
+							<label for="time_or_date">Date/Time Display</label>
+						</div>
+						<div class="dispInline" >
+							<input onchange="elementChange(this)" type="checkbox" data-role="flipswitch" name="time_or_date" id="time_or_date" data-on-text="Time" data-off-text="Date" data-wrapper-class="custom-label-flipswitch">
+	                    </div>
+	                    <div class="clearFloats"></div>
+	                    <div class="dispInlineLabel">
+							<label for="time_format">Show Seconds</label>
+						</div>
+						<div class="dispInline" >
+							<input onchange="elementChange(this)" type="checkbox" data-role="flipswitch" name="time_format" id="time_format" data-on-text="On" data-off-text="Off" data-wrapper-class="custom-label-flipswitch">
+	                    </div>
+	                    <div class="clearFloats"></div>
+	                    <div class="dispInlineLabel">
+							<label for="scrollback">Scrollback Effect</label>
+						</div>
+						<div class="dispInline" >
+							<input onchange="elementChange(this)" type="checkbox" data-role="flipswitch" name="scrollback" id="scrollback" data-on-text="on" data-off-text="off" data-wrapper-class="custom-label-flipswitch">
+	                    </div>
+	                    <div class="clearFloats"></div>
+	                    <div class="dispInlineLabel">
+							<label for="hour_format">12/24 Hour</label>
+						</div>
+						<div class="dispInline" >
+							<input onchange="elementChange(this)" type="checkbox" data-role="flipswitch" name="hour_format" id="hour_format" data-on-text="12H" data-off-text="24H" data-wrapper-class="custom-label-flipswitch">
+	                    </div>
+	                    <div class="clearFloats"></div>
+						<div class="dispInlineLabel">
+							<label for="date_format">Date Format</label>
+						</div>
+						<div class="dispInline" >
+		                    <select onchange="elementChange(this)" type="picklist" id="date_format" data-mini="true">
+		                        <option value="0">DD-MM</option>
+		                        <option value="1">MM-DD</option>
+		                    </select>
+	                    </div>
+	                    <div class="clearFloats"></div>
+						<div class="dispInlineLabel">
+							<label for="fading">Fading</label>
+						</div>
+						<div class="dispInline" >
+		                    <select onchange="elementChange(this)" type="picklist" id="fading" data-mini="true">
+		                        <option value="0">No Fading</option>
+		                        <option value="1">Fade Out</option>
+		                        <option value="2">Fade In</option>
+		                        <option value="3">Fade Out+In</option>
+		                        <option value="4">Cross Fade</option>
+		                    </select>
+	                    </div>
+						<label for="digits_on">Digits On Time (s)</label>
+						<input onchange="elementChange(this)" type="range" name="digits_on" id="digits_on" min="0.25" step="0.25" max="3" value="1.5">
+ 	                    <div class="clearFloats"></div>
+ 						<div class="dispInlineLabel" >
+							<label for="on_range">Display On</label>
+						</div>
+						<div class="dispInline" >
+							<div id="on_range">
+						</div>
+						</div>
+					</div>
+                    <div data-role="fieldcontain">
+                    <label for="time_url">Time Server URL</label>
+                    <input maxlength="80" onblur="elementBlur(this)" type="text" id="time_url" data-mini="true"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div data-role="page" id="leds">
+            <div data-role="header" data-position="fixed">
+                <h1>STC</h1>
+                <div id="set_icon_2" class="ui-btn-right ui-btn ui-state-disabled headerText ui-btn-icon-right ui-icon-eye"></div>
+                <div data-role="navbar">
+                    <ul>
+                        <li>
+                            <a href="#clock">Clock</a>
+                        </li>
+                        <li>
+                            <a class="ui-btn-active ui-state-persist">LEDs</a>
+                        </li>
+                        <li>
+                            <a href="#extra">Extra</a>
+                        </li>
+                        <li>
+                            <a href="#presets">Presets</a>
+                        </li>
+                        <li>
+                            <a href="#info">Info</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div data-role="content">
+                <form action="/set_leds" method="POST" id="leds_form">
+					<div class="dispInlineLabel">
+							<label for="backlight">Backlight</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="backlight" id="backlight"
+							data-on-text="On" data-off-text="Off"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+					<div class="clearFloats"></div>
+					<div class="dispInlineLabel">
+							<label for="hue_cycling">Hue Cycling</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="hue_cycling" id="hue_cycling"
+							data-on-text="On" data-off-text="Off"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+					<div class="clearFloats"></div>
+					<div data-role="fieldcontain">
+						<label for="cycle_time">Cycle Time (s)</label>
+						<input onchange="elementChange(this)" type="range" name="cycle_time" id="cycle_time" data-highlight="true" min="6" max="1200" step="6">
+                    </div>
+                    <div data-role="fieldcontain">
+                    	<div id="color-box">
+                    		<div id="color-overlay"></div>
+                    	</div>
+						<label for="hue">Hue</label>
+						<input onchange="HilightColor();elementChange(this)" type="range" name="hue" id="hue" min="0" max="255" value="0">
+                    </div>
+                    <div data-role="fieldcontain">
+						<label for="saturation">Saturation</label>
+						<input onchange="HilightColor();elementChange(this)" type="range" name="saturation" id="saturation" min="0" max="255" value="255">
+                    </div>
+                    <div data-role="fieldcontain">
+						<label for="led_scale">Brightness</label>
+						<input onchange="HilightColor();elementChange(this)" type="range" name="led_scale" id="led_scale" min="0" max="255" value="255">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div data-role="page" id="extra">
+            <div data-role="header">
+                <h1>STC</h1>
+                <div id="set_icon_3" class="ui-btn-right ui-btn ui-state-disabled headerText ui-btn-icon-right ui-icon-eye"></div>
+                <div data-role="navbar">
+                    <ul>
+                        <li>
+                            <a href="#clock">Clock</a>
+                        </li>
+                        <li>
+                            <a href="#leds">LEDs</a>
+                        </li>
+                        <li>
+                            <a class="ui-btn-active ui-state-persist">Extra</a>
+                        </li>
+                        <li>
+                            <a href="#presets">Presets</a>
+                        </li>
+                        <li>
+                            <a href="#info">Info</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div data-role="content">
+                <form action="/set_extra" method="POST" id="extra_form">
+					<div class="dispInlineLabel">
+							<label for="dimming">Dimming</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="dimming" id="dimming"
+							data-on-text="On" data-off-text="Off"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+					<div class="clearFloats"></div>
+					<div class="dispInlineLabel">
+							<label for="display">Display</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="display" id="display"
+							data-on-text="Clock" data-off-text="Count"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+                    <div class="clearFloats"></div>
+					<div class="dispInlineLabel" >
+						<label for="digit">Digit</label>
+					</div>
+					<div class="dispInline" >
+						<div id="digit"></div>
+					</div>
+					<div class="clearFloats"></div>
+                    <div data-role="fieldcontain">
+						<label for="count_speed">Ticks/min</label>
+						<input onchange="elementChange(this)" type="range" name="count_speed" id="count_speed" min="0" max="60" value="60">
+                    </div>
+					<div class="clearFloats"></div>
+					<div class="dispInlineLabel">
+							<label for="hv">HV</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="hv" id="hv"
+							data-on-text="On" data-off-text="Off"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+					<div class="clearFloats"></div>
+                    <div data-role="fieldcontain">
+						<label for="voltage">Voltage</label>
+						<input onchange="elementChange(this)" type="range" name="voltage" id="voltage" min="75" max="200" value="176">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div data-role="page" id="presets">
+            <div data-role="header" data-position="fixed">
+                <h1>STC</h1>
+                <div data-role="navbar">
+                    <ul>
+                        <li>
+                            <a href="#clock">Clock</a>
+                        </li>
+                        <li>
+                            <a href="#leds">LEDs</a>
+                        </li>
+                        <li>
+                            <a href="#extra">Extra</a>
+                        </li>
+                        <li>
+                            <a class="ui-btn-active ui-state-persist">Presets</a>
+                        </li>
+                        <li>
+                            <a href="#info">Info</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div data-role="content">
+                <form action="/set_presets" method="POST" id="presets_form">
+				    <fieldset data-role="controlgroup">
+				        <legend>Choose one!</legend>
+				        <input onchange="elementChange(this)" type="radio" name="preset" id="set1" value="1">
+				        <label for="set1" id="set1_label">Clock 1</label>
+				        <input onchange="elementChange(this)" type="radio" name="preset" id="set2" value="1">
+				        <label for="set2" id="set2_label" >Clock 2</label>
+				        <input onchange="elementChange(this)" type="radio" name="preset" id="set3" value="1">
+				        <label for="set3" id="set3_label">Clock 3</label>
+				        <input onchange="elementChange(this)" type="radio" name="preset" id="set4" value="1">
+				        <label for="set4" id="set4_label">Conditioner</label>
+				        <input onchange="elementChange(this)" type="radio" name="preset" id="set5" value="1">
+				        <label for="set5" id="set5_label">Manual</label>
+				    </fieldset>
+				</form>
+            	<a href="#preset_names" data-transition="flip" class="ui-shadow ui-btn ui-corner-all ui-btn-inline" data-transition="pop">Edit Names</a>            
+            </div>
+        </div>
+        <div data-role="page" id="info">
+            <div data-role="header" data-position="fixed">
+                <h1>STC</h1>
+                <div data-role="navbar">
+                    <ul>
+                        <li>
+                            <a href="#clock">Clock</a>
+                        </li>
+                        <li>
+                            <a href="#leds">LEDs</a>
+                        </li>
+                        <li>
+                            <a href="#extra">Extra</a>
+                        </li>
+                        <li>
+                            <a href="#presets">Presets</a>
+                        </li>
+                        <li>
+                            <a class="ui-btn-active ui-state-persist">Info</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div data-role="content">
+				<table data-role="table" id="clock-info" data-mode="columntoggle:none" class="ui-responsive table-stripe">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr><th>IP Address</th><td id="wifi_ip_address">...</td></tr>
+						<tr><th>MAC Address</th><td id="wifi_mac_address">...</td></tr>
+						<tr><th>Connected To</th><td id="wifi_ssid">...</td></tr>
+						<tr><th>SSID</th><td id="wifi_ap_ssid">...</td></tr>
+						<tr><th>Chip ID</th><td id="esp_chip_id">...</td></tr>
+						<tr><th>Free Heap</th><td id="esp_free_heap">...</td></tr>
+						<tr><th>Sketch Size</th><td id="esp_sketch_size">...</td></tr>
+						<tr><th>Free Sketch Space</th><td id="esp_sketch_space">...</td></tr>
+						<tr><th>Flash Size</th><td id="esp_flash_size">...</td></tr>
+						<tr><th>Boot Version</th><td id="esp_boot_version">...</td></tr>
+					</tbody>
+				</table>
+			</div>
+        </div>
+        <div data-role="page" id="preset_names" data-dialog="true">
+            <div data-role="content">
+                <form action="/set_preset_names" method="POST" id="preset_names_form">
+				    <fieldset data-role="controlgroup">
+				        <legend>Edit the preset names</legend>
+				        <input onblur="elementBlur(this)" type="text" maxlength="12" name="set1_name" id="set1_name" value="Clock 1" placeholder="preset 1 name">
+				        <input onblur="elementBlur(this)" type="text" maxlength="12" name="set2_name" id="set2_name" value="Clock 2" placeholder="preset 2 name">
+				        <input onblur="elementBlur(this)" type="text" maxlength="12" name="set3_name" id="set3_name" value="Clock 3" placeholder="preset 3 name">
+				        <input onblur="elementBlur(this)" type="text" maxlength="12" name="set4_name" id="set4_name" value="Conditioner" placeholder="preset 4 name">
+				        <input onblur="elementBlur(this)" type="text" maxlength="12" name="set5_name" id="set5_name" value="Manual" placeholder="preset 5 name">
+				    </fieldset>
+				</form>
+				<a href="#presets" class="ui-shadow ui-btn ui-corner-all ui-btn-inline ui-mini" data-transition="flip">Close</a>
+            </div>
+        </div>
+    </body>
+</html>
