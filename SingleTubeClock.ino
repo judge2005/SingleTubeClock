@@ -787,7 +787,7 @@ SoftMSTimer::TimerInfo ntpResponseTimer = {
 };
 #else
 SoftMSTimer::TimerInfo syncTimeTimer = {
-		60000,
+		3600000,	// 1 hour between syncs
 		0,
 		true,
 		getTime
@@ -810,7 +810,7 @@ SoftMSTimer::TimerInfo *infos[] = {
 		&tzInfoTimer,
 		&ntpResponseTimer,
 #else
-//		&syncTimeTimer,
+		&syncTimeTimer,
 #endif
 		0
 };
