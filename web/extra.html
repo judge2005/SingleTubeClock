@@ -1,0 +1,69 @@
+        <div data-role="page" id="Extra">
+            <div data-role="header">
+                <h1>Extra</h1>
+				<a href="#mainMenu" data-rel="main-menu-panel" class="ui-btn ui-btn-left ui-btn-icon-notext ui-icon-bars ui-corner-all"></a>
+                <div id="set_icon_extra" class="ui-btn-right ui-btn ui-state-disabled headerText ui-btn-icon-right ui-icon-eye"></div>
+            </div>
+            <div data-role="content">
+                <form action="/set_extra" method="POST" id="extra_form">
+					<div class="dispInlineLabel">
+							<label for="dimming">Dimming</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="dimming" id="dimming"
+							data-on-text="On" data-off-text="Off"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+					<div class="clearFloats"></div>
+					<div class="dispInlineLabel">
+							<label for="display">Display</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="display" id="display"
+							data-on-text="Clock" data-off-text="Count"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+                    <div class="clearFloats"></div>
+					<div class="dispInlineLabel" >
+						<label for="digit">Digit</label>
+					</div>
+					<div class="dispInline" >
+						<div id="digit"></div>
+					</div>
+					<div class="clearFloats"></div>
+                    <div data-role="fieldcontain">
+						<label for="count_speed">Ticks/min</label>
+						<input onchange="elementChange(this)" type="range" name="count_speed" id="count_speed" min="0" max="60" value="60">
+                    </div>
+					<div class="clearFloats"></div>
+					<div class="dispInlineLabel">
+							<label for="hv">HV</label>
+					</div>
+					<div class="dispInline">
+							<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="hv" id="hv"
+							data-on-text="On" data-off-text="Off"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+					<div class="clearFloats"></div>
+                    <div data-role="fieldcontain">
+						<label for="voltage">Voltage</label>
+						<input onchange="elementChange(this)" type="range" name="voltage" id="voltage" min="75" max="200" value="176">
+                    </div>
+					<div class="clearFloats"></div>
+					<div class="dispInlineLabel">
+						<label for="tube_type">Tube Type</label>
+					</div>
+					<div class="dispInline">
+						<select onchange="elementChange(this)" type="picklist"
+							id="tube_type" data-mini="true">
+							<option value="0">Regular Nixie</option>
+							<option value="1">15 Segment Tube</option>
+							<option value="2">4 Tube Multiplexed</option>
+						</select>
+					</div>
+                </form>
+            </div>
+        </div>

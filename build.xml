@@ -1,0 +1,167 @@
+<project default="default">
+	<!--
+		1) Download this jar from http://groovy-lang.org/download.html
+		2) Update the classpath to match where you put it!
+	-->
+	<taskdef name="groovy"
+		classpath="C:\Users\mpand\Downloads\groovy-2.4.14\embeddable\groovy-all-2.4.14.jar"
+		classname="org.codehaus.groovy.ant.Groovy"/>
+
+	<property name="spiffs.file" value="spiffs.bin"/>
+	<property name="spiffs.dir" value="web"/>
+	
+	<!--
+		Download this jar from https://github.com/littleyoda/EspStackTraceDecoder
+		if you want the stack trace tool to work. Update this property to point to it!
+	-->
+	<property name="stack.jar" value="C:\Users\mpand\Downloads\EspStackTraceDecoder.jar"/>
+	
+	<echo> ${eclipse_home} </echo>
+	<groovy>
+		String getProperty(Properties props, String key, int level) {
+		def value = null
+		   value = props.getProperty(key);
+		   if (value != null) {
+		      // Get the index of the first constant, if any
+		      def beginIndex = 0;
+		      def startName = value.indexOf('${', beginIndex);
+
+		      while (startName != -1) {
+		         if (level+1 > 5) {
+		            // Exceeded MAX_SUBST_DEPTH
+		            // Return the value as is
+		            return value;
+		         }
+
+		         def endName = value.indexOf('}', startName + 1);
+		         if (endName == -1) {
+		            // Terminating symbol not found
+		            // Return the value as is
+		            return value;
+		         }
+
+		         def constName = value.substring(startName+2, endName);
+		         def constValue = getProperty(props, constName, level+1);
+
+		         if (constValue == null) {
+		            // Property name not found
+		            // Return the value as is
+		            return value;
+		         }
+
+		         // Insert the constant value into the
+		         // original property value
+		         def newValue = (startName>0)
+		            ? value.substring(0, startName) : "";
+		         newValue += constValue;
+
+		         // Start checking for constants at this index
+		         beginIndex = newValue.length();
+
+		         // Append the remainder of the value
+		         newValue += value.substring(endName+1);
+
+		         value = newValue;
+
+		         // Look for the next constant
+		         startName = value.indexOf('${', beginIndex);
+		      }
+		   }
+
+		   // Return the value as is
+		   return value;
+		}
+
+		def props = new Properties()
+		
+		props['eclipse_home'] = properties['eclipse_home']
+		props['project_loc'] = properties['project_loc']
+		new File(properties['project_loc'] + './.settings/org.eclipse.cdt.core.prefs').eachLine { line ->
+		    if ((matcher = line =~ /.*\/([AJ].+)\/value=(.+)$/)) {
+		        props[matcher[0][1]] = matcher[0][2]
+		    }
+		}
+		props.each{ k, v -> 
+			properties[k] = getProperty(props, k, 0)
+		}
+		
+		properties['A.BUILD.SPIFFS_SIZE'] = Integer.parseInt(properties['A.BUILD.SPIFFS_END'].substring(2),16) - Integer.parseInt(properties['A.BUILD.SPIFFS_START'].substring(2), 16)
+	</groovy>
+
+	<target name="stack">
+		<java jar="${stack.jar}" fork="true">
+			<arg value="${A.COMPILER.PATH}/xtensa-lx106-elf-addr2line"/>
+			<arg value="${project_loc}/Release/${project_name}.elf"/>
+			<arg value="${project_loc}/dump.txt"/>
+		</java>
+	</target>
+	
+	<target name="erase flash">
+		<exec executable="${A.TOOLS.ESPTOOL.PATH}/${A.TOOLS.ESPTOOL.CMD}">
+			<arg value="-cd"/>
+			<arg value="${A.UPLOAD.RESETMETHOD}"/>
+			<arg value="-cb"/>
+			<arg value="${A.UPLOAD.SPEED}"/>
+			<arg value="-cp"/>
+			<arg value="${A.SERIAL.PORT}"/>
+			<arg value="-ce"/>
+		</exec>		
+	</target>
+	
+	<target name="OTA spiff upload" if="A.NETWORK.PORT">
+		<exec executable="${A.TOOLS.ESPTOOL.NETWORK_CMD}">
+			<arg value="${A.RUNTIME.PLATFORM.PATH}/tools/espota.py"/>
+			<arg value="-i"/>
+			<arg value="${A.SERIAL.PORT}"/>
+			<arg value="-p"/>
+			<arg value="${A.NETWORK.PORT}"/>
+			<arg value="-s"/>
+			<arg value="-f"/>
+			<arg value="${project_loc}/${spiffs.file}"/>
+		</exec>		
+	</target>
+	
+	<target name="wired spiff upload" unless="A.NETWORK.PORT">
+		<exec executable="${A.TOOLS.ESPTOOL.PATH}/${A.TOOLS.ESPTOOL.CMD}">
+			<arg value="-cd"/>
+			<arg value="${A.UPLOAD.RESETMETHOD}"/>
+			<arg value="-cb"/>
+			<arg value="${A.UPLOAD.SPEED}"/>
+			<arg value="-cp"/>
+			<arg value="${A.SERIAL.PORT}"/>
+			<arg value="-ca"/>
+			<arg value="${A.BUILD.SPIFFS_START}"/>
+			<arg value="-cf"/>
+			<arg value="${project_loc}/${spiffs.file}"/>
+		</exec>		
+	</target>
+	
+	<target name="spiff upload" depends="wired spiff upload,OTA spiff upload">
+	</target>
+		
+	<target name="mkspiffs">
+		<echo message="-p ${A.BUILD.SPIFFS_PAGESIZE} -b ${A.BUILD.SPIFFS_BLOCKSIZE} -s ${A.BUILD.SPIFFS_SIZE}"></echo>
+		<exec executable="${A.TOOLS.MKSPIFFS.PATH}/${A.TOOLS.MKSPIFFS.CMD}">
+			<arg value="-d"/>
+			<arg value="5"/>
+			<arg value="-c"/>
+			<arg value="${project_loc}/${spiffs.dir}"/>
+			<arg value="-p"/>
+			<arg value="${A.BUILD.SPIFFS_PAGESIZE}"/>
+			<arg value="-b"/>
+			<arg value="${A.BUILD.SPIFFS_BLOCKSIZE}"/>
+			<arg value="-s"/>
+			<arg value="${A.BUILD.SPIFFS_SIZE}"/>
+			<arg value="${spiffs.file}"/>
+		</exec>
+	</target>
+	
+	<target name="showspiffs">
+		<exec executable="${A.TOOLS.MKSPIFFS.PATH}/${A.TOOLS.MKSPIFFS.CMD}">
+			<arg value="-i"/>
+			<arg value="${spiffs.file}"/>
+		</exec>
+	</target>
+	
+	<target name="default" depends="mkspiffs,spiff upload"/>
+</project>
