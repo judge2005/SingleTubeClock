@@ -729,6 +729,8 @@ void SetupServer() {
 	server.addHandler(&ws);
 	server.begin();
 	ws.enable(true);
+
+	getTime();
 }
 
 void eepromUpdate() {
