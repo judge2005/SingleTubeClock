@@ -3,6 +3,7 @@
 
 //#define DEBUG_ESP_WIFI
 //#define DEBUG_ESP_PORT Serial
+#define BQ24392
 
 #ifndef I2C
 Print *debugPrint = &Serial;
@@ -10,7 +11,6 @@ Print *debugPrint = &Serial;
 #else
 #define DEBUG(...) {}
 #endif
-//#define DEBUG(...) { debugPrint->println(__VA_ARGS__); }
 
 #include "Arduino.h"
 #include <ConfigItem.h>
@@ -56,6 +56,7 @@ Print *debugPrint = &Serial;
 #include <LDR.h>
 #include <SoftMSTimer.h>
 #include <CP2102NUSBRating.h>
+#include <BQ24392USBRating.h>
 
 #include <WSHandler.h>
 #include <WSMenuHandler.h>
@@ -68,8 +69,8 @@ Print *debugPrint = &Serial;
 // ESP8285 pins
 const byte LEDpin = 0;	// D3, has built-in 10k pull up, but we don't care.
 const byte CHRENpin = 5;
-const byte CHR0pin = 10;
-const byte CHR1pin = 9;
+const byte CHR0pin = 10, CHG_ALpin = 10;
+const byte CHR1pin = 9, CHG_DETpin = 9;
 const byte VENpin = 2; // Add pullup
 const byte VADJpin = 4;	//
 const byte DIpin = 13;	// MOSI, D7
@@ -123,7 +124,11 @@ NixieClock *pNixieClock = &oneNixieClock;
 int clicks = 0;
 int rotation = 0;
 
+#ifndef BQ24392
 CP2102NUSBRating usbRating(CHRENpin, CHR0pin, CHR1pin);
+#else
+BQ24392USBRating usbRating(CHG_ALpin, CHG_DETpin);
+#endif
 
 #define PIN_RESET 255  //
 #define DC_JUMPER 0  // I2C Address: 0 - 0x3C, 1 - 0x3D
@@ -202,6 +207,7 @@ namespace CurrentConfig {
 	BooleanConfigItem *time_format = &ConfigSet1::time_format;
 	BooleanConfigItem *hour_format = &ConfigSet1::hour_format;
 	ByteConfigItem *fading = &ConfigSet1::fading;
+	ByteConfigItem *indicator = &ConfigSet1::indicator;
 	BooleanConfigItem *scrollback = &ConfigSet1::scrollback;
 	IntConfigItem *digits_on = &ConfigSet1::digits_on;
 	ByteConfigItem *display_on = &ConfigSet1::display_on;
@@ -253,6 +259,7 @@ namespace CurrentConfig {
 			time_format = static_cast<BooleanConfigItem*>(config->get("time_format"));
 			hour_format = static_cast<BooleanConfigItem*>(config->get("hour_format"));
 			fading = static_cast<ByteConfigItem*>(config->get("fading"));
+			indicator = static_cast<ByteConfigItem*>(config->get("indicator"));
 			scrollback = static_cast<BooleanConfigItem*>(config->get("scrollback"));
 			digits_on = static_cast<IntConfigItem*>(config->get("digits_on"));
 			display_on = static_cast<ByteConfigItem*>(config->get("display_on"));
@@ -481,7 +488,6 @@ void broadcastUpdate(const BaseConfigItem& item) {
     }
 }
 
-WSMenuHandler wsMenuHandler(ups);
 WSConfigHandler wsClockHandler(rootConfig, "clock");
 WSConfigHandler wsLEDHandler(rootConfig, "leds");
 WSConfigHandler wsExtraHandler(rootConfig, "extra");
@@ -489,6 +495,29 @@ WSPresetValuesHandler wsPresetValuesHandler(rootConfig);
 WSInfoHandler wsInfoHandler(ssid);
 WSPresetNamesHandler wsPresetNamesHandler(rootConfig);
 WSUPSHandler wsUPSHandler(rootConfig, "ups", ups, usbRating);
+
+String *ups_items[] = {
+	&WSMenuHandler::clockMenu,
+	&WSMenuHandler::ledsMenu,
+	&WSMenuHandler::extraMenu,
+	&WSMenuHandler::upsMenu,
+	&WSMenuHandler::presetsMenu,
+	&WSMenuHandler::infoMenu,
+	&WSMenuHandler::presetNamesMenu,
+	0
+};
+
+String *items[] = {
+	&WSMenuHandler::clockMenu,
+	&WSMenuHandler::ledsMenu,
+	&WSMenuHandler::extraMenu,
+	&WSMenuHandler::presetsMenu,
+	&WSMenuHandler::infoMenu,
+	&WSMenuHandler::presetNamesMenu,
+	0
+};
+
+WSMenuHandler wsMenuHandler(items);
 
 WSHandler *wsHandlers[] = {
 	&wsMenuHandler,
@@ -608,131 +637,6 @@ void wsHandler(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 	}
 }
 
-void grabInts(String s, int *dest, String sep) {
-	int end = 0;
-	for (int start = 0; end != -1; start = end + 1) {
-		end = s.indexOf(sep, start);
-		if (end > 0) {
-			*dest++ = s.substring(start, end).toInt();
-		} else {
-			*dest++ = s.substring(start).toInt();
-		}
-	}
-}
-
-void grabBytes(String s, byte *dest, String sep) {
-	int end = 0;
-	for (int start = 0; end != -1; start = end + 1) {
-		end = s.indexOf(sep, start);
-		if (end > 0) {
-			*dest++ = s.substring(start, end).toInt();
-		} else {
-			*dest++ = s.substring(start).toInt();
-		}
-	}
-}
-
-void readTimeFailed(String msg) {
-	DEBUG(msg);
-}
-
-#define SYNC_HOURS 3
-#define SYNC_MINS 4
-#define SYNC_SECS 5
-#define SYNC_DAY 2
-#define SYNC_MONTH 1
-#define SYNC_YEAR 0
-
-bool timeInitialized = false;
-
-void setTimeFromInternet() {
-	String body = httpClient.getBody();
-	DEBUG(String("Got response") + body);
-	int intValues[6];
-	grabInts(body, &intValues[0], ",");
-
-	timeInitialized = true;
-    setTime(intValues[SYNC_HOURS], intValues[SYNC_MINS], intValues[SYNC_SECS], intValues[SYNC_DAY], intValues[SYNC_MONTH], intValues[SYNC_YEAR]);
-}
-
-const byte numLEDs = 4;
-
-LEDRGB leds(numLEDs, LEDpin);
-LDR ldr(ADCpin, 50);
-
-void ledDisplay(bool on=true) {
-	// Scale normalized brightness to range 0..255
-	byte brightness = ldr.getAdjustedBrightness(*CurrentConfig::dimming, *CurrentConfig::led_scale, on);
-	leds.ledDisplay(*CurrentConfig::hue, *CurrentConfig::saturation, brightness);
-}
-
-void ledTimerHandler() {
-	ledDisplay();
-	if (*CurrentConfig::hue_cycling) {
-		broadcastUpdate(*CurrentConfig::hue);
-		*CurrentConfig::hue = (*CurrentConfig::hue + 1) % 256;
-	}
-}
-
-int getHVDutyCycle(byte vout) {
-	static const float vcc = 3.15;
-	static const float radj = 0.0;
-
-	float vadj = 1.26+(radj+30.0)*((1.26/10.2)-((vout-1.26)/1208.0));
-	int duty = roundf(vadj*100/vcc);
-
-	return constrain(duty, 0, 100);
-}
-
-#ifdef I2C
-Button *pButton = NULL;
-RotaryEncoder *pEncoder = NULL;
-#endif
-
-AsyncWiFiManagerParameter *hostnameParam;
-
-void initFromEEPROM() {
-//	config.setDebugPrint(debugPrint);
-	config.init();
-//	rootConfig.debug(debugPrint);
-	DEBUG(hostName);
-	rootConfig.get();	// Read all of the config values from EEPROM
-	String currentSetName = currentSet;
-	CurrentConfig::setCurrent(currentSetName);
-	DEBUG(hostName);
-
-	hostnameParam = new AsyncWiFiManagerParameter("Hostname", "clock host name", hostName.value.c_str(), 63);
-}
-
-void createSSID() {
-	// Create a unique SSID that includes the hostname. Max SSID length is 32!
-	ssid = (chipId + hostName).substring(0, 31);
-}
-
-void SetupServer() {
-	DEBUG("SetupServer()");
-	hostName = String(hostnameParam->getValue());
-	hostName.put();
-	config.commit();
-	DEBUG(hostName.value);
-	MDNS.begin(hostName.value.c_str());
-    MDNS.addService("http", "tcp", 80);
-	StartOTA();
-
-	server.serveStatic("/", SPIFFS, "/");
-	server.on("/", HTTP_GET, mainHandler).setFilter(ON_STA_FILTER);
-	server.on("/assets/favicon-32x32.png", HTTP_GET, sendFavicon);
-	server.serveStatic("/assets", SPIFFS, "/assets");
-
-	// attach AsyncWebSocket
-	ws.onEvent(wsHandler);
-	server.addHandler(&ws);
-	server.begin();
-	ws.enable(true);
-
-	getTime();
-}
-
 void eepromUpdate() {
 	config.commit();
 }
@@ -796,6 +700,137 @@ SoftMSTimer::TimerInfo syncTimeTimer = {
 };
 #endif
 
+void grabInts(String s, int *dest, String sep) {
+	int end = 0;
+	for (int start = 0; end != -1; start = end + 1) {
+		end = s.indexOf(sep, start);
+		if (end > 0) {
+			*dest++ = s.substring(start, end).toInt();
+		} else {
+			*dest++ = s.substring(start).toInt();
+		}
+	}
+}
+
+void grabBytes(String s, byte *dest, String sep) {
+	int end = 0;
+	for (int start = 0; end != -1; start = end + 1) {
+		end = s.indexOf(sep, start);
+		if (end > 0) {
+			*dest++ = s.substring(start, end).toInt();
+		} else {
+			*dest++ = s.substring(start).toInt();
+		}
+	}
+}
+
+void readTimeFailed(String msg) {
+	DEBUG(msg);
+	syncTimeTimer.interval = 10000;	// Try again in 10 seconds
+}
+
+#define SYNC_HOURS 3
+#define SYNC_MINS 4
+#define SYNC_SECS 5
+#define SYNC_DAY 2
+#define SYNC_MONTH 1
+#define SYNC_YEAR 0
+
+bool timeInitialized = false;
+
+void setTimeFromInternet() {
+	String body = httpClient.getBody();
+	DEBUG(String("Got response") + body);
+	int intValues[6];
+	grabInts(body, &intValues[0], ",");
+
+	syncTimeTimer.interval = 3600000;	// Try again in one hour
+    setTime(intValues[SYNC_HOURS], intValues[SYNC_MINS], intValues[SYNC_SECS], intValues[SYNC_DAY], intValues[SYNC_MONTH], intValues[SYNC_YEAR]);
+	timeInitialized = true;
+}
+
+void setTimeFromWifiManager() {
+	static String oldWifiTime = "";
+
+	const String &wifiTime = wifiManager.getWifiTime();
+	if (wifiTime != oldWifiTime) {
+		DEBUG(String("Setting time from wifi manager") + wifiTime);
+		int intValues[6];
+		grabInts(wifiTime, &intValues[0], ",");
+
+		timeInitialized = true;
+		oldWifiTime = wifiTime;
+		setTime(intValues[SYNC_HOURS], intValues[SYNC_MINS], intValues[SYNC_SECS], intValues[SYNC_DAY], intValues[SYNC_MONTH], intValues[SYNC_YEAR]);
+	}
+}
+
+const byte numLEDs = 4;
+
+LEDRGB leds(numLEDs, LEDpin);
+LDR ldr(ADCpin, 50);
+
+void ledDisplay(bool on=true) {
+	// Scale normalized brightness to range 0..255
+	byte brightness = ldr.getAdjustedBrightness(*CurrentConfig::dimming, *CurrentConfig::led_scale, on);
+	leds.ledDisplay(*CurrentConfig::hue, *CurrentConfig::saturation, brightness);
+}
+
+void ledTimerHandler() {
+	ledDisplay();
+	if (*CurrentConfig::hue_cycling) {
+		broadcastUpdate(*CurrentConfig::hue);
+		*CurrentConfig::hue = (*CurrentConfig::hue + 1) % 256;
+	}
+}
+
+int getHVDutyCycle(byte vout) {
+	static const float vcc = 3.3;
+	static const float radj = 0.0;
+
+	float vadj = 1.26+(radj+30.0)*((1.26/10.2)-((vout-1.26)/1208.0));
+	int duty = roundf(vadj*100/vcc);
+
+	return constrain(duty, 0, 100);
+}
+
+#ifdef I2C
+Button *pButton = NULL;
+RotaryEncoder *pEncoder = NULL;
+#endif
+
+AsyncWiFiManagerParameter *hostnameParam;
+
+void initFromEEPROM() {
+//	config.setDebugPrint(debugPrint);
+	config.init();
+//	rootConfig.debug(debugPrint);
+	DEBUG(hostName);
+	rootConfig.get();	// Read all of the config values from EEPROM
+	String currentSetName = currentSet;
+	CurrentConfig::setCurrent(currentSetName);
+	DEBUG(hostName);
+
+	hostnameParam = new AsyncWiFiManagerParameter("Hostname", "clock host name", hostName.value.c_str(), 63);
+}
+
+void createSSID() {
+	// Create a unique SSID that includes the hostname. Max SSID length is 32!
+	ssid = (chipId + hostName).substring(0, 31);
+}
+
+void SetupServer() {
+	DEBUG("SetupServer()");
+	hostName = String(hostnameParam->getValue());
+	hostName.put();
+	config.commit();
+	DEBUG(hostName.value);
+	MDNS.begin(hostName.value.c_str());
+    MDNS.addService("http", "tcp", 80);
+	StartOTA();
+
+	getTime();
+}
+
 boolean woke = false;
 void snoozeUpdate() {
 	woke = false;
@@ -835,23 +870,24 @@ void setup()
 
 	initFromEEPROM();
 
+	// Enable LEDs
+	leds.begin();
+	ledDisplay();
+
 	initClock();
 
 	createSSID();
 
-	DEBUG("Set wifiManager")
-	wifiManager.setDebugOutput(false);
-	wifiManager.setConnectTimeout(10);
-	wifiManager.addParameter(hostnameParam);
-	wifiManager.setSaveConfigCallback(SetupServer);
-    wifiManager.startConfigPortalModeless(ssid.c_str(), "secretsauce");
+	server.serveStatic("/", SPIFFS, "/");
+	server.on("/", HTTP_GET, mainHandler).setFilter(ON_STA_FILTER);
+	server.on("/assets/favicon-32x32.png", HTTP_GET, sendFavicon);
+	server.serveStatic("/assets", SPIFFS, "/assets");
 
-#ifdef USE_NTP
-	sendNTPRequest();
-#else
-	httpClient.initialize(*CurrentConfig::time_url);
-	getTime();
-#endif
+	// attach AsyncWebSocket
+	ws.onEvent(wsHandler);
+	server.addHandler(&ws);
+	server.begin();
+	ws.enable(true);
 
 	// Turn off HV
 	DEBUG("Voltage off")
@@ -873,15 +909,25 @@ void setup()
 	analogWriteRange(100);
 	analogWrite(VADJpin, getHVDutyCycle(oldVoltage));
 
-	// Enable LEDs
-	leds.begin();
-	ledDisplay();
-
 	nowMs = millis();
 
 	DEBUG("Voltage on")
 	oldHV = *CurrentConfig::hv;
 	digitalWrite(VENpin, oldHV ? LOW : HIGH);
+
+	DEBUG("Set wifiManager")
+	wifiManager.setDebugOutput(false);
+	wifiManager.setConnectTimeout(10);
+	wifiManager.addParameter(hostnameParam);
+	wifiManager.setSaveConfigCallback(SetupServer);
+    wifiManager.startConfigPortalModeless(ssid.c_str(), "secretsauce");
+
+#ifdef USE_NTP
+	sendNTPRequest();
+#else
+	httpClient.initialize(*CurrentConfig::time_url);
+	getTime();
+#endif
 
 #ifdef I2C
 	Wire.pins(SDApin, SCLpin);
@@ -899,6 +945,7 @@ void setup()
 	if (mcp.begin(EXPANSION_ADDRESS)) {
 		oled.setCursor(0, 1);
 		oled.print("Got Exp");
+		wsMenuHandler.setItems(ups_items);
 	}
 
 	// Set up UPS shield interface
@@ -940,6 +987,8 @@ void loop()
 	ArduinoOTA.handle();
 #endif
 
+	setTimeFromWifiManager();
+
 	nowMs = millis();
 
 #ifdef I2C
@@ -958,6 +1007,8 @@ void loop()
 	}
 
 	pDriver->setBrightness(ldr.getNormalizedBrightness(*CurrentConfig::dimming));
+	pDriver->setIndicator(*CurrentConfig::indicator);
+
 	if (timeInitialized || !*CurrentConfig::display) {
 		pNixieClock->setClockMode(*CurrentConfig::display);
 		pNixieClock->setCountSpeed(*CurrentConfig::count_speed);

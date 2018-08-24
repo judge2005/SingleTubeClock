@@ -4,3 +4,5 @@ libraries
 dump.txt
 sloeber.ino.cpp
 core
+data
+node_modules

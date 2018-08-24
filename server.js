@@ -5,6 +5,7 @@
  */
 'use strict';
 
+var expressStaticGzip = require("express-static-gzip");
 var express = require('express');
 var http = require('http');
 var ws = require('ws');
@@ -20,7 +21,7 @@ app.use(function(req, res, next) {
     next();
 });
 
-app.use(express.static('web'));
+app.use(expressStaticGzip("web"));
 
 var pages = {
 		"type":"sv.init.menu",
@@ -28,8 +29,8 @@ var pages = {
 			{"1": { "url" : "clock.html", "title" : "Clock" }},
 			{"2": { "url" : "leds.html", "title" : "LEDs" }},
 			{"3": { "url" : "extra.html", "title" : "Extra" }},
-			{"4": { "url" : "presets.html", "title" : "Presets" }},
 			{"7": { "url" : "ups.html", "title" : "UPS" }},
+			{"4": { "url" : "presets.html", "title" : "Presets" }},
 			{"5": { "url" : "info.html", "title" : "Info" }},
 			{"6": { "url" : "preset_names.html", "title" : "Preset Names", "noNav" : true}}		
 		]
@@ -106,13 +107,15 @@ var state = {
 		'time_or_date':  true, 
 		'date_format':  1, 
 		'time_format':  true, 
-		'fading':  2, 
+		'fading':  2,
+		'indicator': 1,
 		'scrollback':  true, 
 		'digits_on':  1750, 
 		'display_on':  10, 
 		'display_off':  20,
 		'tube_type': 1,
-		'time_server':  'http://niobo.us/blah'
+		'time_server':  'http://niobo.us/blah',
+		'set_icon_clock': 'Foo'
 	},
 	"2": {
 		'backlight': true, 
@@ -121,14 +124,16 @@ var state = {
 		'tube_type': 1,
 		'hue': 180, 
 		'saturation': 190, 
-		'brightness': 200
+		'brightness': 200,
+		'set_icon_leds': 'Bar'
 	},
 	"3": {
 		'dimming': true, 
 		'hv': true, 
 		'display': true, 
 		'tube_type': 1,
-		'voltage': 176
+		'voltage': 176,
+		'set_icon_extra': 'Bletch'
 	},
 	"4": {
 		'preset' : 'set3'
@@ -158,7 +163,8 @@ var state = {
 		'sensitivity' : '45',
 		'power' : 'Battery',
 		'charge_rate_txt' : '500mA',
-		'usb_rating' : '>500mA'
+		'usb_rating' : '>500mA',
+		'set_icon_ups' : 'Blag'
 	}
 }
 

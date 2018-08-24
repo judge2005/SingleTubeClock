@@ -8,7 +8,7 @@
 		classname="org.codehaus.groovy.ant.Groovy"/>
 
 	<property name="spiffs.file" value="spiffs.bin"/>
-	<property name="spiffs.dir" value="web"/>
+	<property name="spiffs.dir" value="data"/>
 	
 	<!--
 		Download this jar from https://github.com/littleyoda/EspStackTraceDecoder

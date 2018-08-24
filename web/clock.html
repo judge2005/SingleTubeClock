@@ -4,8 +4,7 @@
 		<h1>Clock</h1>
 		<a href="#mainMenu" data-rel="main-menu-panel"
 			class="ui-btn ui-btn-left ui-btn-icon-notext ui-icon-bars ui-corner-all"></a>
-		<div id="set_icon_clock"
-			class="ui-btn-right ui-btn ui-state-disabled headerText ui-btn-icon-right ui-icon-eye"></div>
+		<a onclick="presetsMenu('clock.html');" href="#" id="set_icon_clock"  class="ui-btn-right ui-btn headerText ui-btn-icon-right ui-icon-carat-d"></a>
 	</div>
 	<div data-role="content">
 		<form action="/set_clock" method="POST" id="clock_form">
@@ -35,7 +34,7 @@
 			<div class="dispInline">
 				<input onchange="elementChange(this)" type="checkbox"
 					data-role="flipswitch" name="scrollback" id="scrollback"
-					data-on-text="on" data-off-text="off"
+					data-on-text="On" data-off-text="Off"
 					data-wrapper-class="custom-label-flipswitch">
 			</div>
 			<div class="clearFloats"></div>
@@ -73,9 +72,27 @@
 					<option value="4">Cross Fade</option>
 				</select>
 			</div>
-			<label for="digits_on">Digits On Time (s)</label> <input
+			<div class="clearFloats"></div>
+			<div class="dispInlineLabel">
+				<label for="indicator">Hour/Min Indicator</label>
+			</div>
+			<div class="dispInline">
+				<select onchange="elementChange(this)" type="picklist" id="indicator"
+					data-mini="true">
+					<option value="0">None</option>
+					<option value="1">Neons</option>
+					<option value="2">Nixie DPs</option>
+				</select>
+			</div>
+			<div class="clearFloats"></div>
+			<div class="dispInlineLabel">
+			<label for="digits_on">Digits On Time (s)</label>
+			</div>
+			<div class="dispInline">
+			<input
 				onchange="elementChange(this)" type="range" name="digits_on"
 				id="digits_on" min="0.25" step="0.25" max="3" value="1.5">
+				</div>
 			<div class="clearFloats"></div>
 			<div class="dispInlineLabel">
 				<label for="on_range">Display On</label>
