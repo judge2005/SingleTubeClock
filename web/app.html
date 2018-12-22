@@ -180,7 +180,9 @@ $(document).on("mobileinit", function () {
 			} else {
 				element.val(this[key]);
 				if (elType == "number") {
-					element.slider("refresh");					
+					try {
+						element.slider("refresh");
+					} catch (ex) {}
 				} else if (elType == 'picklist') {
 					element.selectmenu("refresh");
 				}
@@ -218,12 +220,12 @@ $(document).on("mobileinit", function () {
 		return pageMap[pageName];
 	}
 	
-	function elementBlur(element) {
+	function elementBlur(element, value) {
 		if (serverSetting) {
 			return;
 		}
 		var pageId = getPageId($(".ui-page-active").attr("id"));
-		var value = getElementValue(element);
+		var value = value === undefined ? getElementValue(element) : value;
 		var elType = $(element).attr('type');
 		var name = element.id;
 
@@ -238,8 +240,8 @@ $(document).on("mobileinit", function () {
 		safeSend(msg);
 	}
 	
-	function elementChange(element) {
-		elementBlur(element);
+	function elementChange(element, value) {
+		elementBlur(element, value);
 	}
 	
 	function hsv_to_hsl(h, s, v) {
@@ -354,6 +356,7 @@ $(document).on("mobileinit", function () {
 	    case "sv.init.clock":	// Received initialization object
 	    case "sv.init.leds":	// Received initialization object
 	    case "sv.init.extra":	// Received initialization object
+	    case "sv.init.sync":	// Received initialization object
 	    case "sv.init.presets":	// Received initialization object
 	    case "sv.init.preset_names":	// Received initialization object
 	    case "sv.init.info":	// Received initialization object
@@ -437,7 +440,7 @@ $(document).on("mobileinit", function () {
 			  radius: 60,
 			  width: 20,
 			  min: 0,
-			  max: 9,
+			  max: 11,
 			  step: 1,
 			  value: "0",
 			  startAngle: 90,

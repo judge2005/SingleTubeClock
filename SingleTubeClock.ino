@@ -93,6 +93,7 @@ const byte MCP_ENCODERApin = 4;
 const byte MCP_ENCODERBpin = 5;
 #endif
 
+WiFiUDP syncBus;
 
 SafeOLED oled;
 SafeLIS3DH lis;
@@ -236,6 +237,10 @@ namespace CurrentConfig {
 	ByteConfigItem *wakeup_time = &ConfigSet1::wakeup_time;
 	ByteConfigItem *sensitivity = &ConfigSet1::sensitivity;
 
+	// Sync config values
+	IntConfigItem *sync_port = &ConfigSet1::sync_port;
+	ByteConfigItem *sync_role = &ConfigSet1::sync_role;
+
 	void setCurrent(const String &name) {
 		if (CurrentConfig::name == name) {
 			return;	// Already set to this
@@ -287,6 +292,10 @@ namespace CurrentConfig {
 			lpm = static_cast<BooleanConfigItem*>(config->get("lpm"));
 			wakeup_time = static_cast<ByteConfigItem*>(config->get("wakeup_time"));
 			sensitivity = static_cast<ByteConfigItem*>(config->get("sensitivity"));
+
+			// Sync config values
+			sync_port = static_cast<IntConfigItem*>(config->get("sync_port"));
+			sync_role = static_cast<ByteConfigItem*>(config->get("sync_role"));
 
 			BaseConfigItem *currentSetName = rootConfig.get("current_set");
 			currentSetName->fromString(name);
@@ -405,11 +414,92 @@ void readNTPResponse() {
 }
 #endif
 
+void writeSyncBus(char msg[]) {
+	IPAddress broadcastIP(~WiFi.subnetMask() | WiFi.gatewayIP());
+	syncBus.beginPacket(broadcastIP, *CurrentConfig::sync_port);
+	syncBus.write(msg);
+	syncBus.endPacket();
+}
+
+void sendSyncMsg() {
+	static char syncMsg[10] = "sync:";
+	if (*CurrentConfig::sync_role == 1) {
+		itoa(*CurrentConfig::hue, &syncMsg[5], 10);
+		writeSyncBus(syncMsg);
+		pNixieClock->syncDisplay();
+		*CurrentConfig::digit = pNixieClock->getNixieDigit();
+	}
+}
+
+void announceSlave() {
+	static char syncMsg[] = "slave";
+	if (*CurrentConfig::sync_role == 2) {
+		writeSyncBus(syncMsg);
+	}
+}
+
+void readSyncBus() {
+	static char incomingMsg[10];
+
+	int size = syncBus.parsePacket();
+
+	if (size) {
+		int len = syncBus.read(incomingMsg, 9);
+		if (len > 0 && len < 10) {
+			incomingMsg[len] = 0;
+
+			if (strncmp("sync", incomingMsg, 4) == 0) {
+				if (strlen(incomingMsg) > 5) {
+					byte hue = atoi(&incomingMsg[5]);
+					*CurrentConfig::hue = hue;
+				}
+				pNixieClock->syncDisplay();
+				*CurrentConfig::digit = pNixieClock->getNixieDigit();
+				return;
+			}
+
+			if (*CurrentConfig::sync_role == 1 && strcmp("slave", incomingMsg) == 0) {
+				// A new slave just joined, broadcast a sync message
+				sendSyncMsg();
+			}
+		}
+	}
+}
+
+void syncBusLoop() {
+	static byte currentRole = 255;
+
+	if (*CurrentConfig::sync_role != 0) {
+		// We are a master or slave
+		// If port has changed, set new port and announce status
+		if (syncBus.localPort() != *CurrentConfig::sync_port) {
+			syncBus.begin(*CurrentConfig::sync_port);
+			currentRole = 255;
+		}
+	} else {
+		// We aren't in a sync group
+		currentRole = 0;
+		syncBus.stop();
+	}
+
+	if (currentRole != *CurrentConfig::sync_role) {
+		currentRole = *CurrentConfig::sync_role;
+		if (currentRole == 1) {
+			sendSyncMsg();
+		} else if (currentRole == 2) {
+			announceSlave();
+		}
+	}
+
+	readSyncBus();
+}
+
 void initClock() {
 	switch (tube_type) {
 	case 1:
 		pNixieClock = &oneNixieClock;
 		pDriver = &fifteenSegDriver;
+		oneNixieClock.setScrollBackDelay(50);
 		break;
 	case 2:
 		pNixieClock = &fourNixieClock;
@@ -418,6 +508,7 @@ void initClock() {
 	default:
 		pNixieClock = &oneNixieClock;
 		pDriver = &nixieDriver;
+		oneNixieClock.setScrollBackDelay(40);
 		break;
 	}
 
@@ -491,6 +582,7 @@ void broadcastUpdate(const BaseConfigItem& item) {
 WSConfigHandler wsClockHandler(rootConfig, "clock");
 WSConfigHandler wsLEDHandler(rootConfig, "leds");
 WSConfigHandler wsExtraHandler(rootConfig, "extra");
+WSConfigHandler wsSyncHandler(rootConfig, "sync");
 WSPresetValuesHandler wsPresetValuesHandler(rootConfig);
 WSInfoHandler wsInfoHandler(ssid);
 WSPresetNamesHandler wsPresetNamesHandler(rootConfig);
@@ -500,6 +592,7 @@ String *ups_items[] = {
 	&WSMenuHandler::clockMenu,
 	&WSMenuHandler::ledsMenu,
 	&WSMenuHandler::extraMenu,
+	&WSMenuHandler::syncMenu,
 	&WSMenuHandler::upsMenu,
 	&WSMenuHandler::presetsMenu,
 	&WSMenuHandler::infoMenu,
@@ -511,6 +604,7 @@ String *items[] = {
 	&WSMenuHandler::clockMenu,
 	&WSMenuHandler::ledsMenu,
 	&WSMenuHandler::extraMenu,
+	&WSMenuHandler::syncMenu,
 	&WSMenuHandler::presetsMenu,
 	&WSMenuHandler::infoMenu,
 	&WSMenuHandler::presetNamesMenu,
@@ -519,6 +613,7 @@ String *items[] = {
 
 WSMenuHandler wsMenuHandler(items);
 
+// Order of this needs to match the numbers in WSMenuHandler.cpp
 WSHandler *wsHandlers[] = {
 	&wsMenuHandler,
 	&wsClockHandler,
@@ -527,7 +622,8 @@ WSHandler *wsHandlers[] = {
 	&wsPresetValuesHandler,
 	&wsInfoHandler,
 	&wsPresetNamesHandler,
-	&wsUPSHandler
+	&wsUPSHandler,
+	&wsSyncHandler
 };
 
 void updateValue(int screen, String pair) {
@@ -571,6 +667,8 @@ void updateValue(int screen, String pair) {
 				}
 #endif
 				broadcastUpdate(*item);
+			} else if (strcmp("sync_do", key) == 0) {
+				sendSyncMsg();
 			}
 		}
 	}
@@ -668,6 +766,13 @@ SoftMSTimer::TimerInfo snoozeTimer = {
 		0,
 		false,
 		snoozeUpdate
+};
+
+SoftMSTimer::TimerInfo syncTimer = {
+		3600000L,
+		0,
+		true,
+		sendSyncMsg
 };
 
 #ifdef USE_NTP
@@ -842,6 +947,7 @@ SoftMSTimer::TimerInfo *infos[] = {
 		&ledTimer,
 		&eepromUpdateTimer,
 		&snoozeTimer,
+		&syncTimer,
 #ifdef USE_NTP
 		&ntpRequestTimer,
 		&tzInfoTimer,
@@ -987,9 +1093,9 @@ void loop()
 	ArduinoOTA.handle();
 #endif
 
-	setTimeFromWifiManager();
+	syncBusLoop();
 
-	nowMs = millis();
+	setTimeFromWifiManager();
 
 #ifdef I2C
 	if (pButton != NULL && pButton->clicked()) {
@@ -1034,6 +1140,7 @@ void loop()
 		digitalWrite(VENpin, oldHV ? LOW : HIGH);
 	}
 
+	nowMs = millis();
 	pNixieClock->loop(nowMs);
 	if (pNixieClock->getNixieDigit() != *CurrentConfig::digit) {
 		*CurrentConfig::digit = pNixieClock->getNixieDigit();

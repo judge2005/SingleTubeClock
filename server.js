@@ -30,6 +30,7 @@ var pages = {
 			{"2": { "url" : "leds.html", "title" : "LEDs" }},
 			{"3": { "url" : "extra.html", "title" : "Extra" }},
 			{"7": { "url" : "ups.html", "title" : "UPS" }},
+			{"8": { "url" : "sync.html", "title" : "Sync" }},
 			{"4": { "url" : "presets.html", "title" : "Presets" }},
 			{"5": { "url" : "info.html", "title" : "Info" }},
 			{"6": { "url" : "preset_names.html", "title" : "Preset Names", "noNav" : true}}		
@@ -102,6 +103,14 @@ var sendUPS = function(conn) {
 	conn.send(json);	
 }
 
+var sendSync = function(conn) {
+	var json = '{"type":"sv.init.sync","value":';
+	json += JSON.stringify(state[8]);
+	json += '}';
+	console.log(json);
+	conn.send(json);	
+}
+
 var state = {
 	"1": {
 		'time_or_date':  true, 
@@ -165,6 +174,11 @@ var state = {
 		'charge_rate_txt' : '500mA',
 		'usb_rating' : '>500mA',
 		'set_icon_ups' : 'Blag'
+	},
+	"8": {
+		'sync_port' : '12345',
+		'sync_role' : '0',
+		'set_icon_sync' : 'burble'
 	}
 }
 
@@ -239,6 +253,9 @@ wss.on('connection', function(conn) {
     		break;
     	case 7:
     		sendUPS(conn);
+    		break;
+    	case 8:
+    		sendSync(conn);
     		break;
     	case 9:
     		message = message.substring(message.indexOf(':')+1);
