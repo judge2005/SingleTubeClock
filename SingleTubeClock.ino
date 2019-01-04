@@ -230,6 +230,7 @@ namespace CurrentConfig {
 	ByteConfigItem *voltage = &ConfigSet1::voltage;
 	IntConfigItem *digit = &ConfigSet1::digit;
 	ByteConfigItem *count_speed = &ConfigSet1::count_speed;
+	StringConfigItem *pin_order = &ConfigSet1::pin_order;
 
 	// UPS config values
 	ByteConfigItem *charge_rate = &ConfigSet1::charge_rate;
@@ -286,6 +287,7 @@ namespace CurrentConfig {
 			voltage = static_cast<ByteConfigItem*>(config->get("voltage"));
 			digit = static_cast<IntConfigItem*>(config->get("digit"));
 			count_speed = static_cast<ByteConfigItem*>(config->get("count_speed"));
+			pin_order = static_cast<StringConfigItem*>(config->get("pin_order"));
 
 			// UPS config values
 			charge_rate = static_cast<ByteConfigItem*>(config->get("charge_rate"));
@@ -1114,6 +1116,7 @@ void loop()
 
 	pDriver->setBrightness(ldr.getNormalizedBrightness(*CurrentConfig::dimming));
 	pDriver->setIndicator(*CurrentConfig::indicator);
+	pDriver->setDigitMap(((String)(*CurrentConfig::pin_order)).c_str());
 
 	if (timeInitialized || !*CurrentConfig::display) {
 		pNixieClock->setClockMode(*CurrentConfig::display);

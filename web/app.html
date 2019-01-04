@@ -16,7 +16,9 @@ $(document).on("mobileinit", function () {
 });
 </script>
 	<script src="/jquery/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="/jquery/jquery-ui-sortable-1.12.1.min.js"></script>
 	<script src="/jquery/jquery.roundslider/1.3/roundslider.min.js"></script>
+	<script src="/jquery/jquery.ui.touch-punch.min.js"></script>
     <!-- endbuild -->
     
 	<!-- build:css script.css -->
@@ -153,6 +155,11 @@ $(document).on("mobileinit", function () {
 		if (typeof displayOff != 'undefined') {
 			$('#on_range').roundSlider("setValue", displayOff, 2);
 			delete values["display_off"];
+		}		
+		var pinMap = values["pin_order"];
+		if (typeof pinMap != 'undefined') {
+			resetList(pinMap);
+			delete values["pin_order"];
 		}
 		
 		Object.keys(values).forEach(function(key, index) {
@@ -383,6 +390,18 @@ $(document).on("mobileinit", function () {
 		}
 	}
 	
+	function resetList(order) {
+		var order = order || "0123456789ab";
+		
+		for (var i=0; i<order.length; i++) {
+			$('#pin_order [id=' + order[i] + ']')
+				.remove()
+				.appendTo($('#pin_order'));             
+		}
+    	
+    	elementBlur($('#pin_order')[0], order);
+	}
+	
 	$(document).ready(function () {
 		$(document).on('pagecontainerchange', function(event, ui) {
 		    var current = ui.toPage[0].id;   
@@ -467,6 +486,19 @@ $(document).on("mobileinit", function () {
 				safeSend(msg);
 			  }
 		});
+		
+	    $( "#pin_order" ).sortable();
+	    $( "#pin_order" ).disableSelection();
+	    <!-- Refresh list to the end of sort to have a correct display -->
+	    $( "#pin_order" ).on( "sortstop", function(event, ui) {
+	    	$(this).listview('refresh');
+	    });
+	    $( "#pin_order" ).on( "sortupdate", function( event, ui ) {
+	    	var sortedIDs = $(this).sortable( "toArray" ).join('');
+	    	
+	    	elementBlur(this, sortedIDs);
+	    } );
+	    
 		console.log("end_pagecreate");
 	});
 	

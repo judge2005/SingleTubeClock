@@ -183,7 +183,7 @@ var state = {
 }
 
 var broadcastUpdate = function(conn, field, value) {
-	var json = '{"type":"sv.update","value":{' + '"' + field + '":' + value + '}}';
+	var json = '{"type":"sv.update","value":{' + '"' + field + '":' + JSON.stringify(value) + '}}';
 	console.log(json);
 	try {
 		conn.send(json);

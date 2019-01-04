@@ -53,17 +53,40 @@
 						<input onchange="elementChange(this)" type="range" name="voltage" id="voltage" min="75" max="200" value="176">
                     </div>
 					<div class="clearFloats"></div>
+					<div data-role="fieldcontain">
+						<div class="dispInlineLabel">
+							<label for="tube_type">Tube Type</label>
+						</div>
+						<div class="dispInline">
+							<select onchange="elementChange(this)" type="picklist"
+								id="tube_type" data-mini="true">
+								<option value="0">Regular Nixie</option>
+								<option value="1">15 Segment Tube</option>
+								<option value="2">4 Tube Multiplexed</option>
+							</select>
+						</div>
+					</div>
+					<div class="clearFloats"></div>
 					<div class="dispInlineLabel">
-						<label for="tube_type">Tube Type</label>
+						<label>Cathode Map</label>
 					</div>
 					<div class="dispInline">
-						<select onchange="elementChange(this)" type="picklist"
-							id="tube_type" data-mini="true">
-							<option value="0">Regular Nixie</option>
-							<option value="1">15 Segment Tube</option>
-							<option value="2">4 Tube Multiplexed</option>
-						</select>
+				      <ul data-role="listview" data-inset="true" id="pin_order" class="ui-nodisc-icon ui-alt-icon">
+					      <li id="0" data-icon="bars"><a href="#">Digit 0</a></li>
+					      <li id="1" data-icon="bars"><a href="#">Digit 1</a></li>
+					      <li id="2" data-icon="bars"><a href="#">Digit 2</a></li>
+					      <li id="3" data-icon="bars"><a href="#">Digit 3</a></li>
+					      <li id="4" data-icon="bars"><a href="#">Digit 4</a></li>
+					      <li id="5" data-icon="bars"><a href="#">Digit 5</a></li>
+					      <li id="6" data-icon="bars"><a href="#">Digit 6</a></li>
+					      <li id="7" data-icon="bars"><a href="#">Digit 7</a></li>
+					      <li id="8" data-icon="bars"><a href="#">Digit 8</a></li>
+					      <li id="9" data-icon="bars"><a href="#">Digit 9</a></li>
+					      <li id="a" data-icon="bars"><a href="#">DP 1</a></li>
+					      <li id="b" data-icon="bars"><a href="#">DP 2</a></li>
+					    </ul>
 					</div>
+					<input onclick="resetList()" data-mini="true" id="pin_order_reset" type="button" value="Reset Map"/>
                 </form>
             </div>
         </div>
