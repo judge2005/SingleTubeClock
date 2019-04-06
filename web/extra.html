@@ -53,6 +53,16 @@
 						<input onchange="elementChange(this)" type="range" name="voltage" id="voltage" min="75" max="200" value="176">
                     </div>
 					<div class="clearFloats"></div>
+                    <div data-role="fieldcontain">
+						<label for="mov_delay">Movement Sensor Off Delay (minutes)</label>
+						<input onchange="elementChange(this)" type="range" name="mov_delay" id="mov_delay" min="0" max="60" value="0">
+                    </div>
+					<div class="clearFloats"></div>
+                    <div data-role="fieldcontain">
+						<label for="pwm_freq">PWM Frequency (Hz)</label>
+						<input onchange="elementChange(this)" type="range" name="pwm_freq" id="pwm_freq" min="4000" max="16000" value="8000">
+                    </div>
+					<div class="clearFloats"></div>
 					<div data-role="fieldcontain">
 						<div class="dispInlineLabel">
 							<label for="tube_type">Tube Type</label>

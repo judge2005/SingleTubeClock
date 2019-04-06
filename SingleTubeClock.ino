@@ -29,7 +29,7 @@ Print *debugPrint = &Serial;
 #include <AsyncJson.h>
 #include <ESP8266HTTPClient.h>
 #include <ESPAsyncHTTPClient.h>
-#include <ESPAsyncWiFiManager.h>
+#include <ESPAsyncWiFiManagerOTC.h>
 #include <DNSServer.h>
 #include <Wire.h>
 
@@ -76,6 +76,43 @@ const byte VADJpin = 4;	//
 const byte DIpin = 13;	// MOSI, D7
 const byte CLpin = 14;	// SCK, D5
 const byte LEpin = 12;	// MISO, D6
+const byte MovPin = 16;	// PIR/Radar etc.
+
+class MovementSensor {
+public:
+	MovementSensor(const byte pin) : onTime(0), delayMs(0), pin(pin) {
+	}
+
+	void setDelay(byte delayMinutes) {
+		delayMs = delayMinutes * 60000;
+	}
+
+	void setOnTime(unsigned long onTime) {
+		this->onTime = onTime;
+	}
+
+	bool isOn() {
+		return !isOff();
+	}
+
+	bool isOff() {
+		int state = digitalRead(pin);
+
+		unsigned long nowMs = millis();
+
+		if (state) {
+			onTime = nowMs;	// Sensor will stay high while movement is detected
+		}
+
+		return (delayMs != 0) && (nowMs - onTime >= delayMs);	// So zero = always off
+	}
+
+private:
+	unsigned long onTime;
+	unsigned long delayMs;
+
+	const byte pin;
+};
 
 const byte ADCpin = A0;
 
@@ -231,6 +268,8 @@ namespace CurrentConfig {
 	IntConfigItem *digit = &ConfigSet1::digit;
 	ByteConfigItem *count_speed = &ConfigSet1::count_speed;
 	StringConfigItem *pin_order = &ConfigSet1::pin_order;
+	IntConfigItem *pwm_freq = &ConfigSet1::pwm_freq;
+	ByteConfigItem *mov_delay = &ConfigSet1::mov_delay;
 
 	// UPS config values
 	ByteConfigItem *charge_rate = &ConfigSet1::charge_rate;
@@ -288,6 +327,8 @@ namespace CurrentConfig {
 			digit = static_cast<IntConfigItem*>(config->get("digit"));
 			count_speed = static_cast<ByteConfigItem*>(config->get("count_speed"));
 			pin_order = static_cast<StringConfigItem*>(config->get("pin_order"));
+			pwm_freq = static_cast<IntConfigItem*>(config->get("pwm_freq"));
+			mov_delay = static_cast<ByteConfigItem*>(config->get("mov_delay"));
 
 			// UPS config values
 			charge_rate = static_cast<ByteConfigItem*>(config->get("charge_rate"));
@@ -871,7 +912,7 @@ void setTimeFromWifiManager() {
 	}
 }
 
-const byte numLEDs = 4;
+const byte numLEDs = 17;
 
 LEDRGB leds(numLEDs, LEDpin);
 LDR ldr(ADCpin, 50);
@@ -961,8 +1002,11 @@ SoftMSTimer::TimerInfo *infos[] = {
 };
 
 SoftMSTimer timedFunctions(infos);
+MovementSensor mov(MovPin);
+
 byte oldVoltage = 176;
 bool oldHV = true;
+
 void setup()
 {
 	chipId.toUpperCase();
@@ -1018,6 +1062,10 @@ void setup()
 	analogWrite(VADJpin, getHVDutyCycle(oldVoltage));
 
 	nowMs = millis();
+
+	pinMode(MovPin, INPUT);
+	mov.setDelay(1);
+	mov.setOnTime(nowMs);
 
 	DEBUG("Voltage on")
 	oldHV = *CurrentConfig::hv;
@@ -1117,6 +1165,8 @@ void loop()
 	pDriver->setBrightness(ldr.getNormalizedBrightness(*CurrentConfig::dimming));
 	pDriver->setIndicator(*CurrentConfig::indicator);
 	pDriver->setDigitMap(((String)(*CurrentConfig::pin_order)).c_str());
+	NixieDriver::setPWMFreq(*CurrentConfig::pwm_freq);
+	mov.setDelay(*CurrentConfig::mov_delay);
 
 	if (timeInitialized || !*CurrentConfig::display) {
 		pNixieClock->setClockMode(*CurrentConfig::display);
@@ -1134,7 +1184,7 @@ void loop()
 	pNixieClock->setOnOff(*CurrentConfig::display_on, *CurrentConfig::display_off);
 	pNixieClock->setDigitsOn(*CurrentConfig::digits_on);
 	pNixieClock->setScrollback(*CurrentConfig::scrollback);
-	bool clockOn = woke || ((ups.getVBus() || (*CurrentConfig::lpm == false)) && pNixieClock->isOn());
+	bool clockOn = woke || ((ups.getVBus() || (*CurrentConfig::lpm == false)) && pNixieClock->isOn() && mov.isOn());
 
 	bool newHV = *CurrentConfig::hv && clockOn;
 

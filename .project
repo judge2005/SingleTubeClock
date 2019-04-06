@@ -117,9 +117,9 @@
 			<location>C:/Users/mpand/Documents/Arduino/libraries/ESPAsyncWebServer</location>
 		</link>
 		<link>
-			<name>libraries/ESPAsyncWiFiManager</name>
+			<name>libraries/ESPAsyncWiFiManagerOTC</name>
 			<type>2</type>
-			<location>C:/Users/mpand/Documents/Arduino/libraries/ESPAsyncWiFiManager</location>
+			<location>C:/Users/mpand/Documents/Arduino/libraries/ESPAsyncWiFiManagerOTC</location>
 		</link>
 		<link>
 			<name>libraries/Hash</name>
