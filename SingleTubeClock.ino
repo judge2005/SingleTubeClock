@@ -57,6 +57,7 @@ Print *debugPrint = &Serial;
 #include <SoftMSTimer.h>
 #include <CP2102NUSBRating.h>
 #include <BQ24392USBRating.h>
+#include <MovementSensor.h>
 
 #include <WSHandler.h>
 #include <WSMenuHandler.h>
@@ -77,42 +78,6 @@ const byte DIpin = 13;	// MOSI, D7
 const byte CLpin = 14;	// SCK, D5
 const byte LEpin = 12;	// MISO, D6
 const byte MovPin = 16;	// PIR/Radar etc.
-
-class MovementSensor {
-public:
-	MovementSensor(const byte pin) : onTime(0), delayMs(0), pin(pin) {
-	}
-
-	void setDelay(byte delayMinutes) {
-		delayMs = delayMinutes * 60000;
-	}
-
-	void setOnTime(unsigned long onTime) {
-		this->onTime = onTime;
-	}
-
-	bool isOn() {
-		return !isOff();
-	}
-
-	bool isOff() {
-		int state = digitalRead(pin);
-
-		unsigned long nowMs = millis();
-
-		if (state) {
-			onTime = nowMs;	// Sensor will stay high while movement is detected
-		}
-
-		return (delayMs != 0) && (nowMs - onTime >= delayMs);	// So zero = always off
-	}
-
-private:
-	unsigned long onTime;
-	unsigned long delayMs;
-
-	const byte pin;
-};
 
 const byte ADCpin = A0;
 
@@ -136,6 +101,7 @@ SafeOLED oled;
 SafeLIS3DH lis;
 SafeMCP23017 mcp;
 UPS ups(mcp);
+MovementSensor mov(MovPin);
 
 unsigned long nowMs = 0;
 
@@ -270,6 +236,7 @@ namespace CurrentConfig {
 	StringConfigItem *pin_order = &ConfigSet1::pin_order;
 	IntConfigItem *pwm_freq = &ConfigSet1::pwm_freq;
 	ByteConfigItem *mov_delay = &ConfigSet1::mov_delay;
+	ByteConfigItem *mov_src = &ConfigSet1::mov_src;
 
 	// UPS config values
 	ByteConfigItem *charge_rate = &ConfigSet1::charge_rate;
@@ -329,6 +296,7 @@ namespace CurrentConfig {
 			pin_order = static_cast<StringConfigItem*>(config->get("pin_order"));
 			pwm_freq = static_cast<IntConfigItem*>(config->get("pwm_freq"));
 			mov_delay = static_cast<ByteConfigItem*>(config->get("mov_delay"));
+			mov_src = static_cast<ByteConfigItem*>(config->get("mov_src"));
 
 			// UPS config values
 			charge_rate = static_cast<ByteConfigItem*>(config->get("charge_rate"));
@@ -474,6 +442,18 @@ void sendSyncMsg() {
 	}
 }
 
+void sendMovMsg() {
+	static char syncMsg[10] = "mov";
+	static unsigned long lastSend = 0;
+
+	// send at most 10 notifications/sec
+	if (*CurrentConfig::sync_role == 1 && (nowMs - lastSend >= 100)) {
+		lastSend = nowMs;
+
+		writeSyncBus(syncMsg);
+	}
+}
+
 void announceSlave() {
 	static char syncMsg[] = "slave";
 	if (*CurrentConfig::sync_role == 2) {
@@ -499,6 +479,10 @@ void readSyncBus() {
 				pNixieClock->syncDisplay();
 				*CurrentConfig::digit = pNixieClock->getNixieDigit();
 				return;
+			}
+
+			if (strncmp("mov", incomingMsg, 3) == 0) {
+				mov.trigger();
 			}
 
 			if (*CurrentConfig::sync_role == 1 && strcmp("slave", incomingMsg) == 0) {
@@ -1002,7 +986,6 @@ SoftMSTimer::TimerInfo *infos[] = {
 };
 
 SoftMSTimer timedFunctions(infos);
-MovementSensor mov(MovPin);
 
 byte oldVoltage = 176;
 bool oldHV = true;
@@ -1066,6 +1049,7 @@ void setup()
 	pinMode(MovPin, INPUT);
 	mov.setDelay(1);
 	mov.setOnTime(nowMs);
+	mov.setCallback(&sendMovMsg);
 
 	DEBUG("Voltage on")
 	oldHV = *CurrentConfig::hv;
@@ -1167,6 +1151,7 @@ void loop()
 	pDriver->setDigitMap(((String)(*CurrentConfig::pin_order)).c_str());
 	NixieDriver::setPWMFreq(*CurrentConfig::pwm_freq);
 	mov.setDelay(*CurrentConfig::mov_delay);
+	mov.setSrc(*CurrentConfig::mov_src);
 
 	if (timeInitialized || !*CurrentConfig::display) {
 		pNixieClock->setClockMode(*CurrentConfig::display);

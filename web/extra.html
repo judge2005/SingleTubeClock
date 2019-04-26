@@ -56,6 +56,15 @@
                     <div data-role="fieldcontain">
 						<label for="mov_delay">Movement Sensor Off Delay (minutes)</label>
 						<input onchange="elementChange(this)" type="range" name="mov_delay" id="mov_delay" min="0" max="60" value="0">
+					<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+					    <legend>Sensor type</legend>
+					    <input onchange="elementChange(this)" type="radio" name="mov_src" id="mov_none" value="0">
+					    <label for="mov_none">None</label>
+					    <input onchange="elementChange(this)" type="radio" name="mov_src" id="move_local" value="1">
+					    <label for="move_local">Local</label>
+					    <input onchange="elementChange(this)" type="radio" name="mov_src" id="mov_remote" value="2">
+					    <label for="mov_remote">Remote</label>
+					</fieldset>
                     </div>
 					<div class="clearFloats"></div>
                     <div data-role="fieldcontain">
