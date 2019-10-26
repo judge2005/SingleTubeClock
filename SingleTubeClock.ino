@@ -79,7 +79,7 @@ const byte CLpin = 14;	// SCK, D5
 const byte LEpin = 12;	// MISO, D6
 const byte MovPin = 16;	// PIR/Radar etc.
 
-const byte ADCpin = A0;
+const byte LDRpin = A0;
 
 // Expansion pins
 #ifdef I2C
@@ -899,7 +899,7 @@ void setTimeFromWifiManager() {
 const byte numLEDs = 17;
 
 LEDRGB leds(numLEDs, LEDpin);
-LDR ldr(ADCpin, 50);
+LDR ldr(LDRpin, 50);
 
 void ledDisplay(bool on=true) {
 	// Scale normalized brightness to range 0..255
@@ -1146,7 +1146,6 @@ void loop()
 		analogWrite(VADJpin, getHVDutyCycle(oldVoltage));
 	}
 
-	pDriver->setBrightness(ldr.getNormalizedBrightness(*CurrentConfig::dimming));
 	pDriver->setIndicator(*CurrentConfig::indicator);
 	pDriver->setDigitMap(((String)(*CurrentConfig::pin_order)).c_str());
 	NixieDriver::setPWMFreq(*CurrentConfig::pwm_freq);
@@ -1160,6 +1159,8 @@ void loop()
 		pNixieClock->setClockMode(false);
 		pNixieClock->setCountSpeed(60);
 	}
+
+	pNixieClock->setBrightness(ldr.getNormalizedBrightness(*CurrentConfig::dimming));
 	pNixieClock->setFadeMode(*CurrentConfig::fading);
 	pNixieClock->setTimeMode(*CurrentConfig::time_or_date);
 	pNixieClock->setDateFormat(*CurrentConfig::date_format);
