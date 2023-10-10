@@ -1,0 +1,38 @@
+        <div data-role="page" id="Network">
+            <div data-role="header">
+                <h1>Network</h1>
+				<a href="#mainMenu" data-rel="main-menu-panel" class="ui-btn ui-btn-left ui-btn-icon-notext ui-icon-bars ui-corner-all"></a>
+				<a onclick="presetsMenu('sync.html');" href="#" id="set_icon_sync"  class="ui-btn-right ui-btn headerText ui-btn-icon-right ui-icon-carat-d"></a>
+            </div>
+            <div data-role="content">
+                <form action="/set_sync" method="POST" id="sync_form">
+					<label for="sync_port">Sync Port</label>
+					<input	onblur="elementBlur(this)" type="number" pattern="[0-9]*" id="sync_port" data-mini="true" />
+					<div data-role="fieldcontain">
+					<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+					    <legend>Role</legend>
+					    <input onchange="elementChange(this)" type="radio" name="sync_role" id="sync_none" value="0">
+					    <label for="sync_none">None</label>
+					    <input onchange="elementChange(this)" type="radio" name="sync_role" id="sync_master" value="1">
+					    <label for="sync_master">Master</label>
+					    <input onchange="elementChange(this)" type="radio" name="sync_role" id="sync_slave" value="2">
+					    <label for="sync_slave">Slave</label>
+					</fieldset>
+					</div>
+					<div class="clearFloats"></div>
+					<div data-role="fieldcontain">
+					<label for="sync_do">&nbsp;</label>
+					<input onclick="elementChange(this, true)" data-mini="true" id="sync_do" type="button" value="Sync"/>
+					</div>
+					<div class="dispInlineLabel">
+						<label for="wifi_ap">WiFi AP</label>
+					</div>
+					<div class="dispInline">
+						<input onchange="elementChange(this)" type="checkbox"
+							data-role="flipswitch" name="wifi_ap" id="wifi_ap"
+							data-on-text="On" data-off-text="Off"
+							data-wrapper-class="custom-label-flipswitch">
+					</div>
+                </form>
+            </div>
+        </div>

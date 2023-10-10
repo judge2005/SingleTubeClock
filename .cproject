@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="io.sloeber.core.toolChain.release.1732618002">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="io.sloeber.core.toolChain.release.1732618002" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="io.sloeber.core.toolChain.release.1732618002" name="Release" optionalBuildProperties="" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="io.sloeber.core.toolChain.release.1732618002.819327649" name="/" resourcePath="">
+						<toolChain id="io.sloeber.core.toolChain.release.1860813582" name="Arduino Toolchain (Sloeber edition)" superClass="io.sloeber.core.toolChain.release">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.1609618451" name="Arduino Target" osList="all" superClass="io.sloeber.targetplatform"/>
+							<builder buildPath="${workspace_loc:/SingleTubeClock}/Release" id="io.sloeber.sketch.builder.237471085" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Arduino sketch builder" superClass="io.sloeber.sketch.builder"/>
+							<tool id="io.sloeber.tool.sketch.compiler.cpp.1517603352" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.734086830" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_NeoPixel}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266mDNS}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266WiFi}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncTCP}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncTCP/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncWebServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncWebServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Wire}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Time}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_LIS3DH}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_Unified_Sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_MCP23017_Arduino_Library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/DNSServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/EEPROM}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/U8g2}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/U8g2/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/NixieDriver}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/OneNixieClock}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncHttpClient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ArduinoJson}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ArduinoJson/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266HTTPClient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/DNSServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266HTTPClient/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266WiFi/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/UPS}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/NixieMisc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/TimeSync}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPConfig}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Hash/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_Sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/arduinoFFT/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncWiFiManager}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncOTAWebUpdate}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncWiFiManager/src}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.cpp.sketch.input.1805709737" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.compiler.c.1970785877" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.c.sketch.option.incpath.1788379585" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_NeoPixel}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266mDNS}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266WiFi}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncTCP}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncTCP/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncWebServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncWebServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Wire}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Time}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_LIS3DH}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_Unified_Sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_MCP23017_Arduino_Library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/DNSServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/EEPROM}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/U8g2}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/U8g2/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/NixieDriver}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/OneNixieClock}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncHttpClient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ArduinoJson}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ArduinoJson/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266HTTPClient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/DNSServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266HTTPClient/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266WiFi/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/UPS}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/NixieMisc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/TimeSync}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPConfig}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Hash/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_Sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/arduinoFFT/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncWiFiManager}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncOTAWebUpdate}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncWiFiManager/src}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.c.sketch.input.1903901658" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.sketch.compiler.s.851725388" name="Arduino Assembler" superClass="io.sloeber.tool.sketch.compiler.s">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.asm.sketch.option.incpath.759110599" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_NeoPixel}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266mDNS}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266WiFi}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncTCP}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncTCP/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncWebServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncWebServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Wire}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Time}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_LIS3DH}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_Unified_Sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_MCP23017_Arduino_Library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/DNSServer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/EEPROM}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/U8g2}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/U8g2/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/NixieDriver}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/OneNixieClock}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPAsyncHttpClient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ArduinoJson}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ArduinoJson/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266HTTPClient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/DNSServer/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266HTTPClient/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESP8266WiFi/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/UPS}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/NixieMisc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/TimeSync}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ESPConfig}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Hash/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/Adafruit_Sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/arduinoFFT/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncWiFiManager}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncOTAWebUpdate}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SingleTubeClock/libraries/ASyncWiFiManager/src}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.S.sketch.input.1895052562" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.ar.1531093106" name="Arduino archiver" superClass="io.sloeber.tool.ar"/>
+							<tool id="io.sloeber.tool.combine.1836773689" name="Arduino combiner" superClass="io.sloeber.tool.combine"/>
+							<tool id="io.sloeber.tool.objcopy.eep.1100920990" name="Arduino tool Create eeprom" superClass="io.sloeber.tool.objcopy.eep"/>
+							<tool id="io.sloeber.tool.size.1376383563" name="Arduino tool Print Size" superClass="io.sloeber.tool.size"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="libraries/AsyncTCP/.git|libraries/AsyncTCP/.github|libraries/Adafruit_Sensor/.github|libraries/Adafruit_Sensor/.git|libraries/ESPAsyncTCP/.github|libraries/ESPAsyncTCP/.git|libraries/Time/docs|libraries/Time/.git|libraries/ESPAsyncWebServer/.github|libraries/ArduinoJson/.git|libraries/ESPConfig/.git|libraries/NeoPixelBus/.github|libraries/NeoPixelBus/.git|libraries/ESPPerfectTime/travis|libraries/ESPPerfectTime/.git|libraries/TimeSync/.git|libraries/ASyncOTAWebUpdate/.git|libraries/ESPAsyncUDP/.github|libraries/ESPAsyncUDP/.git|libraries/ESPAsyncDNSServer/.git|libraries/ESPAsyncWiFiManager/.git|libraries/Adafruit_NeoPixel/.github|libraries/Adafruit_NeoPixel/.git|libraries/UPS/.git|libraries/ESPAsyncWiFiManagerOTC/.git|libraries/ESPAsyncWebServer/.git|libraries/OneNixieClock/.git|libraries/NixieMisc/.git|libraries/NixieDriver/.git|libraries/Configs/.git|libraries/ESPAsyncWebServer/travis|libraries/ESPAsyncTCP/travis|libraries/ESPAsyncTCP/ssl|libraries/ArduinoJson/scripts|libraries/ArduinoJson/.github|libraries/ArduinoJson/fuzzing|libraries/?*/**/?xamples/**|libraries/?*/**/?xtras/**|libraries/?*/**/test*/**|libraries/?*/**/third-party/**|libraries**/._*|libraries/?*/c*/?*|libraries/?*/d*/?*|libraries/?*/D*/?*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="SingleTubeClock.null.1737366429" name="SingleTubeClock"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+</cproject>

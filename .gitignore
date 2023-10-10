@@ -1,0 +1,12 @@
+node_modules
+data
+Release
+libraries
+sloeber.ino.cpp
+spiffs.bin
+stacktrace.txt
+.DS_Store
+.svn/
+Archive.zip
+dump.txt
+spec.d
