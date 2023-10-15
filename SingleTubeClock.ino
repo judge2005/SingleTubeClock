@@ -120,7 +120,7 @@ Vadj8266 vadj(VADJpin);
 
 unsigned long nowMs = 0;
 
-char *revision="$Rev: 635 $";
+char *revision="$Rev: 636 $";
 
 String chipId = String(ESP.getChipId(), HEX);
 String ssid = "STC-";
@@ -1015,6 +1015,7 @@ void setup()
 #else
 	wifiManager.setDebugOutput(false);
 #endif
+	wifiManager.setHostname(hostName.value.c_str());
 	wifiManager.setCustomOptionsHTML("<br><form action='/t' name='time_form' method='post'><button name='time' onClick=\"{var now=new Date();this.value=now.getFullYear()+','+(now.getMonth()+1)+','+now.getDate()+','+now.getHours()+','+now.getMinutes()+','+now.getSeconds();} return true;\">Set Clock Time</button></form><br><form action=\"/app.html\" method=\"get\"><button>Configure Clock</button></form>");
 	wifiManager.addParameter(hostnameParam);
 	wifiManager.setSaveConfigCallback(SetupServer);
