@@ -35,15 +35,15 @@
                     		<div id="color-overlay"></div>
                     	</div>
 						<label for="hue">Hue</label>
-						<input onchange="HilightColor();elementChange(this)" type="range" name="hue" id="hue" min="0" max="255" value="0">
+						<input data-wrapper-class="hue" onchange="HilightColor();elementChange(this)" type="range" name="hue" id="hue" min="0" max="255" value="0">
                     </div>
                     <div data-role="fieldcontain">
 						<label for="saturation">Saturation</label>
-						<input onchange="HilightColor();elementChange(this)" type="range" name="saturation" id="saturation" min="0" max="255" value="255">
+						<input data-wrapper-class="saturation" onchange="HilightColor();elementChange(this)" type="range" name="saturation" id="saturation" min="0" max="255" value="255">
                     </div>
                     <div data-role="fieldcontain">
 						<label for="led_scale">Brightness</label>
-						<input onchange="HilightColor();elementChange(this)" type="range" name="led_scale" id="led_scale" min="0" max="255" value="255">
+						<input data-wrapper-class="value" onchange="HilightColor();elementChange(this)" type="range" name="led_scale" id="led_scale" min="0" max="255" value="255">
                     </div>
 					<div class="clearFloats"></div>
                     <div data-role="fieldcontain">

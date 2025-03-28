@@ -84,7 +84,14 @@ function getCSVPartitionData(partitionFile) {
 
 function getPlatformPartitionData() {
 	var platformFile = sloeberProperties.get('Config.Release.board.BOARD.TXT').replace('${SLOEBER_HOME}', props['eclipse_home']);
-	var platformKeyRoot = sloeberProperties.get('Config.Release.board.BOARD.ID') + '.menu.FlashSize.' + sloeberProperties.get('Config.Release.board.BOARD.MENU.FlashSize');
+	var spiffKey = sloeberProperties.get('Config.Release.board.BOARD.MENU.FlashSize');
+	var platformKeyRoot = '';
+	if (spiffKey) {
+		platformKeyRoot = sloeberProperties.get('Config.Release.board.BOARD.ID') + '.menu.FlashSize.' + spiffKey;
+	} else {
+		spiffKey = sloeberProperties.get('Config.Release.board.BOARD.MENU.eesz');
+		platformKeyRoot = sloeberProperties.get('Config.Release.board.BOARD.ID') + '.menu.eesz.' + spiffKey;
+	}
 	var partitionProperties = propertiesReader(platformFile);
 
 	props['A.BUILD.SPIFFS_START'] = '0x' + partitionProperties.get(platformKeyRoot + '.build.spiffs_start').toString(16);
@@ -124,6 +131,9 @@ gulp.task('load_properties', function(cb) {
 	getPartitionData();
 
 	props["A.UPLOAD.SPEED"] = sloeberProperties.get('Config.Release.board.BOARD.MENU.UploadSpeed');
+	if (!props["A.UPLOAD.SPEED"]) {
+		props["A.UPLOAD.SPEED"] = sloeberProperties.get('Config.Release.board.BOARD.MENU.baud');
+	}
 	props["A.SERIAL.PORT"] = sloeberProperties.get('Config.Release.board.UPLOAD.PORT');
 	props['A.BUILD.FLASH_MODE'] = 'dio';
 
@@ -154,6 +164,9 @@ gulp.task('load_properties', function(cb) {
 		props["A.TOOLS.ESPTOOL.CMD"] = 'esptool';
 	}
 	props['A.UPLOAD.RESETMETHOD'] = sloeberProperties.get('Config.Release.board.BOARD.MENU.ResetMethod');
+	if (!props['A.UPLOAD.RESETMETHOD']) {
+		props['A.UPLOAD.RESETMETHOD'] = 'nodemcu';	// A hack
+	}
 
 	cb();	// Done
 });
@@ -219,6 +232,7 @@ gulp.task('clean', function() {
 
 gulp.task('buildfs_inline', gulp.series('clean', function() {
     return gulp.src(web_src + '/*.html')
+        .pipe(favicon())
         .pipe(inline({
             base: web_src,
             js: uglify,

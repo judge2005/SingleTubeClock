@@ -47,24 +47,19 @@
 			<location>/Users/Nemesis/Documents/Arduino/libraries/ASyncOTAWebUpdate</location>
 		</link>
 		<link>
-			<name>libraries/ASyncWiFiManager</name>
-			<type>2</type>
-			<location>/Users/Nemesis/Documents/Arduino/libraries/ASyncWiFiManager</location>
-		</link>
-		<link>
 			<name>libraries/Adafruit_LIS3DH</name>
 			<type>2</type>
-			<location>/Users/Nemesis/Documents/Arduino/libraries/Adafruit_LIS3DH</location>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_LIS3DH/1.0.0</locationURI>
 		</link>
 		<link>
 			<name>libraries/Adafruit_MCP23017_Arduino_Library</name>
 			<type>2</type>
-			<location>/Users/Nemesis/Documents/Arduino/libraries/Adafruit_MCP23017_Arduino_Library</location>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_MCP23017_Arduino_Library/1.3.0</locationURI>
 		</link>
 		<link>
 			<name>libraries/Adafruit_NeoPixel</name>
 			<type>2</type>
-			<location>/Users/Nemesis/Documents/Arduino/libraries/Adafruit_NeoPixel</location>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_NeoPixel/1.8.4</locationURI>
 		</link>
 		<link>
 			<name>libraries/Adafruit_Sensor</name>
@@ -74,12 +69,17 @@
 		<link>
 			<name>libraries/Adafruit_Unified_Sensor</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_Unified_Sensor/1.0.3</locationURI>
+			<location>/Users/Nemesis/Documents/Arduino/libraries/Adafruit_Unified_Sensor</location>
 		</link>
 		<link>
-			<name>libraries/ArduinoJson</name>
+			<name>libraries/ArduinoJson6</name>
 			<type>2</type>
-			<location>/Users/Nemesis/Documents/Arduino/libraries/ArduinoJson</location>
+			<location>/Users/Nemesis/Documents/Arduino/libraries/ArduinoJson6</location>
+		</link>
+		<link>
+			<name>libraries/AsyncWiFiManager</name>
+			<type>2</type>
+			<location>/Users/Nemesis/Documents/Arduino/libraries/AsyncWiFiManager</location>
 		</link>
 		<link>
 			<name>libraries/Configs</name>
@@ -169,7 +169,7 @@
 		<link>
 			<name>libraries/U8g2</name>
 			<type>2</type>
-			<location>/Users/Nemesis/Documents/Arduino/libraries/U8g2</location>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/U8g2/2.35.30</locationURI>
 		</link>
 		<link>
 			<name>libraries/UPS</name>

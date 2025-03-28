@@ -120,12 +120,12 @@ Vadj8266 vadj(VADJpin);
 
 unsigned long nowMs = 0;
 
-char *revision="$Rev: 636 $";
+char *revision="$Rev: 679 $";
 
 String chipId = String(ESP.getChipId(), HEX);
 String ssid = "STC-";
 
-StringConfigItem hostName("hostname", 63, "SingleTubeClock");
+StringConfigItem hostName("hostname", 63, "OneTubeClock");
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws"); // access at ws://[esp ip]/ws

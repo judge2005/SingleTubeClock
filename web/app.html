@@ -19,14 +19,19 @@
 	<script src="/jquery/jquery-ui-sortable-1.12.1.min.js"></script>
 	<script src="/jquery/jquery.roundslider/1.3/roundslider.min.js"></script>
 	<script src="/jquery/jquery.ui.touch-punch.min.js"></script>
+	<script src="/jquery/js.cookie.min.js"></script>
     <!-- endbuild -->
 
 	<!-- build:css script.css -->
-	<link rel="stylesheet" href="/jquery/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<link rel="stylesheet" href="themes/dark.css" />
+	<link rel="stylesheet" href="themes/icons.css" />
+	<link href="/jquery/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet" />
 	<link href="/jquery/jquery.roundslider/1.3/roundslider.min.css" rel="stylesheet" />
 	<!-- endbuild -->
 
-	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABFFBMVEUAAACSkpIxMTEKCgo/Pz9YWFgMDAwMDAwPDw8gICAqKipqamqSkpJ1dXUICAgGBgYQEBAEBAQNDQ0LCwsPDw8REREKCgoODg4TExMPDw8PDw8TExMdHR0SEhIVFRUiIiISEhISEhI5OTlHR0cXFxcbGxsXFxcbGxsbGxs2NjYfHx8pKSkwMDAzMzNKSkouLi5NTU1ZWVkqKipdXV1OTk5BQUEREREHBwcJCQkLCwscHBwVFRUrKyshISE4ODgUFBQgICAWFhYbGxsbGxsSEhIlJSUqKipNTU0WFhZbW1tSUlIiIiIbGxs7Ozs9PT1bW1sfHx8yMjJvb282NjZRUVEmJiZWVlZCQkJnZ2fw8PAAAAAKCgo+WiZ7AAAAWnRSTlMABDHtGgno2sdeQSEJBvn59vbx5OPa1MG/vrGuq6qmnZeQi4F9e3FuaGBaTko9OicjIB8ZEg3p59vLyb27t6mfl5GLhXZ0cGxqZmZkWFZQTko2LCooKBwUEATs1IN1AAAA/0lEQVQ4y4WQRXIDQRAEexakRTFLFjOjmZkZy///hxXhmzXTzksdMk9Ff5jMXFIiXNfr1B7o/VVIdV0HAlZvOwvsyIJi2nYO8UvIW/VaStBj/qKWgx75znytBk6FzvbM6vA4ON6MkAS/JO53x9XurVkGNFlhdO7E0CC6tBCekpp5cgDdZgL7JheaHZwIZVBqIE6kFfaf5b6fDCK2XG9Ccq6uY9CJJYCt/4IK6z+BJzZoI8v6j43oiPNmOtrj/NRKaYwWzUTTZ/woU18Qw1veIJbCnPeLRHnABkUAa6bavwBYFuqgAawDUL9wBLRbcZwqgxaCPonuuTIwwg7x9EnOD7yqJHNnrSJeAAAAAElFTkSuQmCC" />
+	<!-- shortcut::web/assets/favicon-32x32.png -->
+	<link rel="icon" href="assets/favicon-32x32.png" type="image/x-icon">
+
 	<style type="text/css">
 		/* Custom indentations are needed because the length of custom labels differs from
    the length of the standard labels */
@@ -55,9 +60,22 @@
     }
 }
 */
-		.headerText {
-			opacity: 1 !important;
-			background-color: #e9e9e9 !important;
+		.ui-page {
+			max-width: 640px !important;/*or 640 */
+			margin: 0 auto !important;
+			position: relative !important;
+		}
+
+		.hue + .ui-slider-track {
+			background-image: linear-gradient(to right, red,yellow,lime,cyan,blue,magenta, red);
+		}
+
+		.saturation + .ui-slider-track {
+			background-image: linear-gradient(to right, white, hwb(120 0% 0%));
+		}
+
+		.value + .ui-slider-track {
+			background-image: linear-gradient(to right, black, hwb(120 0% 0%));
 		}
 
 		.dispInline,
@@ -81,32 +99,37 @@
 		}
 
 		.rs-control .rs-range-color {
-			background: #3080c0;
+			background: #F08300;
 		}
 
 		.rs-control .rs-path-color {
-			background-color: #e9e9e9;
+			background-color: #1F242A;
 		}
 
 		.rs-control .rs-handle {
-			background-color: #f6f6f6;
-			border: 2px solid #d0d0d0;
+			background-color: #FF920F;
+			border: 2px solid #844801;
 		}
 
+		.rs-border {
+			border-color: #1F242A;
+		}
+
+		.rs-bg-color {
+			background-color: #354555;
+		}
+
+		.rs-tooltip {
+			border-color: #1F242A;
+		}
 		.rs-tooltip-text {
 			font-size: 16px;
+			color: #F08300;
 		}
 
 		.rs-tooltip.hover {
-			background-color: #e9e9e9;
-		}
-
-		#test .rs-seperator {
-			border-width: 0px;
-		}
-
-		#test .rs-handle {
-			background-color: #3080c0;
+			background-color: #354555;
+			border-color: #1F242A;
 		}
 
 		#color-box {
@@ -132,7 +155,7 @@
 			right: 0;
 			bottom: 0;
 			left: 0;
-			background: url(/assets/logo_m_gray.jpg?embed);
+			background: url(/assets/logo.jpg?embed);
 			background-repeat: no-repeat;
 			background-size: 100%;
 		}
@@ -287,6 +310,13 @@
 			var vSlider = $("#led_scale");
 			var v = getElementValue(vSlider);
 
+			var track = $(".saturation + .ui-slider-track");
+			var css = "linear-gradient(to right, white, hwb(" + Math.round(h * 360 / 255) + " 0% 0%))";
+			track.css({"background-image": css});
+			track = $(".value + .ui-slider-track");
+			css = "linear-gradient(to right, black, hwb(" + Math.round(h * 360 / 255) + " 0% 0%))";
+			track.css({"background-image": css});
+
 			var color = "hsla(" + (h * 360 / 255 | 0) + ",100%," + (100 - s * 50 / 255 | 0) + "%," + v / 255 + ")";
 			$("#color-overlay").css("background-color", color);
 		}
@@ -313,28 +343,35 @@
 		function initializeMenu(values) {
 			var htmlString = '<ul id="menuList" data-role="listview" data-inset="true">';
 			pageMap = {};
+			var activePageTitle = Cookies.get('activePageTitle');
+			var activeURL;
 
 			for (var i = 0; i < values.length; i++) {
 				var obj = values[i];
 				var key = Object.keys(obj)[0];
+				if (i == 0) {
+					activeURL = obj[key].url;
+				}
 				if (!obj[key].noNav) {
 					htmlString += '<li><a data-rel="close" href="' + obj[key].url + '" pageId="' + obj[key].title + '">' + obj[key].title + '</a></li>';
 				}
 				pageMap[obj[key].title] = key;
+				if (obj[key].title == activePageTitle) {
+					activeURL = obj[key].url;
+				}
 			}
 
 			htmlString += '</ul>';
 			$("#menuList").replaceWith(htmlString);
 			$("div[data-role='panel']").panel().enhanceWithin();
 			if (values.length > 0) {
-				var obj = values[0];
-				var key = Object.keys(obj)[0];
-				$.mobile.changePage(obj[key].url);
+				$.mobile.changePage(activeURL);
 			}
 		}
 
 		function pageRefresh(activePage) {
 			if (typeof activePage != 'undefined') {
+				Cookies.set('activePageTitle', activePage);
 				safeSend(getPageId(activePage) + ':');
 			}
 		};
